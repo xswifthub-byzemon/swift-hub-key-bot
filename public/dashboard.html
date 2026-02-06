@@ -6,13 +6,13 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
 
 *{
   box-sizing:border-box;
-  font-family:"Orbitron",sans-serif;
+  font-family:"Rajdhani","Orbitron",sans-serif;
 }
 
 body{
@@ -22,138 +22,153 @@ body{
   overflow-x:hidden;
 }
 
-/* ================= Background Effect ================= */
+/* ================= Background ================= */
 
 #bg{
   position:fixed;
   inset:0;
   z-index:-1;
-  opacity:0.15;
-  transition:1s;
+  opacity:.12;
 }
 
-.effect1{
-  background:linear-gradient(180deg,#fff,#000,#fff);
-  animation:flow1 8s linear infinite;
+#bg{
+  background:linear-gradient(180deg,#111,#000,#111);
+  animation:bgmove 12s linear infinite;
 }
 
-@keyframes flow1{
-  from{background-position:0% 0%}
-  to{background-position:0% 200%}
-}
-
-.effect2{
-  background:linear-gradient(90deg,#000,#fff,#000);
-  animation:flow2 8s linear infinite;
-}
-
-@keyframes flow2{
+@keyframes bgmove{
   from{background-position:0%}
   to{background-position:200%}
-}
-
-.effect3{
-  background:radial-gradient(circle,#fff,#000,#000);
-  animation:wave 6s ease-in-out infinite;
-}
-
-@keyframes wave{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.2)}
-  100%{transform:scale(1)}
 }
 
 /* ================= Header ================= */
 
 header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px;
+  text-align:center;
+  padding:18px 10px;
   background:#000;
   border-bottom:2px solid #222;
 }
 
-/* LOGO */
-
-header img{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  object-fit:cover;
-  border:1px solid #444;
-  background:#111;
-  box-shadow:0 0 10px #fff;
-}
-
-/* ================= Title Effect ================= */
+/* ================= Title ================= */
 
 .title{
-  font-size:22px;
+  font-size:26px;
   font-weight:700;
+  letter-spacing:2px;
 
   background:linear-gradient(
     90deg,
-    #ff0000,
-    #ffffff,
-    #ff0000
+    #fff,
+    #000,
+    #fff
   );
 
   background-size:200%;
   -webkit-background-clip:text;
   color:transparent;
 
-  animation:titleMove 4s linear infinite;
+  animation:titleFlow 5s linear infinite;
 
   text-shadow:
-    0 0 15px rgba(255,0,0,.6),
-    0 0 25px rgba(255,255,255,.4);
+    0 0 12px #000,
+    0 0 25px #000;
 }
 
-@keyframes titleMove{
+@keyframes titleFlow{
   from{background-position:0%}
   to{background-position:200%}
+}
+
+/* ================= Stats ================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:12px;
+}
+
+.stat{
+  background:#0b0b0b;
+  border:2px solid #fff;
+  animation:boxBlink 1.5s infinite alternate;
+  padding:10px;
+  text-align:center;
+  border-radius:6px;
+}
+
+@keyframes boxBlink{
+  0%{box-shadow:0 0 5px #fff}
+  100%{box-shadow:0 0 15px #fff}
+}
+
+.stat h3{
+  margin:2px 0;
+  font-size:13px;
+  color:#aaa;
+}
+
+.stat span{
+  font-size:22px;
+  font-weight:700;
 }
 
 /* ================= Table ================= */
 
 .container{
-  padding:10px;
+  padding:8px;
 }
 
 table{
   width:100%;
   border-collapse:separate;
   border-spacing:0 8px;
+  table-layout:fixed;
+}
+
+th,td{
+  text-align:center;
 }
 
 th{
   font-size:12px;
-  color:#aaa;
+  color:#fff;
   padding:8px;
   background:#050505;
 }
 
+/* Emoji Glow */
+
+th span{
+  animation:emojiBlink 1.5s infinite;
+  display:inline-block;
+}
+
+@keyframes emojiBlink{
+  0%{text-shadow:0 0 5px #fff}
+  50%{text-shadow:0 0 15px #fff}
+  100%{text-shadow:0 0 5px #fff}
+}
+
 td{
   padding:10px 5px;
-  font-size:11px;
+  font-size:12px;
+  word-break:break-all;
 }
+
+/* Row */
 
 tr{
   background:#0b0b0b;
   border:2px solid #fff;
-  animation:borderBW 2s infinite alternate;
+
+  animation:rowBlink 1.3s infinite alternate;
 }
 
-@keyframes borderBW{
-  0%{
-    border-color:#fff;
-    box-shadow:0 0 6px #fff;
-  }
-  100%{
-    border-color:#000;
-    box-shadow:0 0 6px #000;
-  }
+@keyframes rowBlink{
+  0%{box-shadow:0 0 5px #fff}
+  100%{box-shadow:0 0 12px #fff}
 }
 
 tr:hover{
@@ -163,8 +178,8 @@ tr:hover{
 /* ================= Status ================= */
 
 .status{
-  font-size:16px;
-  animation:blink 1.5s infinite;
+  font-size:18px;
+  animation:blink 1.2s infinite;
 }
 
 @keyframes blink{
@@ -202,19 +217,35 @@ footer{
 
 <body>
 
-<div id="bg" class="effect1"></div>
+<div id="bg"></div>
 
 <header>
 
-  <!-- LOGO (EMBEDDED IMAGE - NEVER FAIL) -->
-  <img src="data:image/jpeg;base64,
- /9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBUQEBAVFRUVFRUVFRUVFRUVFRUVFhUVFRUYHSggGBolHRUVITEhJSkrLi4uFx8zODMtNygtLisBCgoKDg0OFRAQFysZFRkrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIAKgBLAMBIgACEQEDEQH/xAAbAAACAwEBAQAAAAAAAAAAAAAEBQADBgIBB//EADwQAAEDAgMFBQcEAwAAAAAAAAEAAgMEEQUSITFBUQYTImFxgZGhsRQjQrHB0SNS4fEkYnKS/8QAGgEAAwEBAQEAAAAAAAAAAAAAAAECAwQFBv/EACoRAAICAgIBAwMFAAAAAAAAAAABAhEDEiExBBNBUSJhcfAiMkKB/9oADAMBAAIRAxEAPwD7oiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Z"
-  alt="Swift Hub Logo"
-  >
-
-  <div class="title">Swift Hub Key Control</div>
+  <!-- TITLE -->
+  <div class="title">SWIFT HUB • KEY CONTROL</div>
 
 </header>
+
+<!-- STATS -->
+
+<div class="stats">
+
+  <div class="stat">
+    <h3>Total Keys</h3>
+    <span id="total">0</span>
+  </div>
+
+  <div class="stat">
+    <h3>Free Keys</h3>
+    <span id="free">0</span>
+  </div>
+
+  <div class="stat">
+    <h3>Used Keys</h3>
+    <span id="used">0</span>
+  </div>
+
+</div>
 
 <div class="container">
 
@@ -222,11 +253,11 @@ footer{
 
 <thead>
 <tr>
-  <th>#</th>
-  <th>👤 User</th>
-  <th>🔑 Key</th>
-  <th>🚦 Status</th>
-  <th>⏱ Time</th>
+  <th>No.</th>
+  <th><span>👤</span> User</th>
+  <th><span>🔑</span> Key</th>
+  <th><span>🚦</span> Status</th>
+  <th><span>⏱</span> Time</th>
 </tr>
 </thead>
 
@@ -242,27 +273,11 @@ Swift Hub © 2026 • Secure System
 
 <script>
 
-/* ================= Background Switch ================= */
-
-const effects=["effect1","effect2","effect3"];
-let idx=0;
-
-setInterval(()=>{
-
-  const bg=document.getElementById("bg");
-
-  bg.className=effects[idx];
-
-  idx=(idx+1)%effects.length;
-
-},10000);
-
-
-/* ================= Time Format ================= */
+/* ================= Time ================= */
 
 function format(ms){
 
-  if(ms<=0) return "00 : 00 : 00";
+  if(ms<=0) return "00:00:00";
 
   let s=Math.floor(ms/1000);
 
@@ -270,11 +285,10 @@ function format(ms){
   let m=Math.floor((s%3600)/60);
   let se=s%60;
 
-  return `${String(h).padStart(2,"0")} : ${String(m).padStart(2,"0")} : ${String(se).padStart(2,"0")}`;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(se).padStart(2,"0")}`;
 }
 
-
-/* ================= Load Data ================= */
+/* ================= Load ================= */
 
 async function load(){
 
@@ -285,6 +299,10 @@ async function load(){
 
     let html="";
 
+    let total=data.length;
+    let free=0;
+    let used=0;
+
     data.forEach((k,i)=>{
 
       let st="",cls="",time="";
@@ -293,19 +311,22 @@ async function load(){
 
         st="🟢";
         cls="free";
-        time="06 : 00 : 00";
+        time="06:00:00";
+        free++;
 
       }else if(k.left>0){
 
         st="🟡";
         cls="using";
         time=format(k.left);
+        used++;
 
       }else{
 
         st="🔴";
         cls="expired";
         time="EXPIRED";
+        used++;
       }
 
       html+=`
@@ -315,7 +336,7 @@ async function load(){
 
         <td>${k.user||"—"}</td>
 
-        <td>${k.key.slice(0,24)}...</td>
+        <td>${k.key.slice(0,26)}...</td>
 
         <td class="status ${cls}">${st}</td>
 
@@ -326,6 +347,10 @@ async function load(){
     });
 
     document.getElementById("data").innerHTML=html;
+
+    document.getElementById("total").textContent=total;
+    document.getElementById("free").textContent=free;
+    document.getElementById("used").textContent=used;
 
   }catch(e){
     console.log(e);
