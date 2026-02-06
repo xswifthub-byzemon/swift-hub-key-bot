@@ -45,41 +45,30 @@ header{
   justify-content:center;
   position:relative;
 
-  padding:18px;
+  padding:14px;
   background:#000;
   border-bottom:3px solid #fff;
 }
 
 /* Menu */
 
-.menu{
+.menu,.back{
   position:absolute;
   left:12px;
   top:50%;
   transform:translateY(-50%);
-  font-size:26px;
+  font-size:24px;
   cursor:pointer;
-  user-select:none;
 }
 
-/* Back */
-
-.back{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:26px;
-  cursor:pointer;
-  display:none;
-}
+.back{display:none}
 
 /* ================= Title ================= */
 
 .title{
   font-family:"Anton",sans-serif;
-  font-size:28px;
-  letter-spacing:4px;
+  font-size:24px;
+  letter-spacing:3px;
 
   background:linear-gradient(90deg,#ff0000,#fff,#ff0000);
   background-size:300%;
@@ -90,8 +79,8 @@ header{
   animation:titleFlow 4s linear infinite;
 
   text-shadow:
-    0 0 15px #fff,
-    0 0 35px #000;
+    0 0 12px #fff,
+    0 0 25px #000;
 }
 
 @keyframes titleFlow{
@@ -104,7 +93,7 @@ header{
 #panel{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.9);
+  background:rgba(0,0,0,.95);
   display:none;
   z-index:99;
 
@@ -122,12 +111,12 @@ header{
   font-size:18px;
   cursor:pointer;
 
-  animation:blink 1.2s infinite alternate;
+  animation:panelBlink 1s infinite alternate;
 }
 
-@keyframes blink{
+@keyframes panelBlink{
   0%{box-shadow:0 0 5px #fff}
-  100%{box-shadow:0 0 15px #fff}
+  100%{box-shadow:0 0 18px #fff}
 }
 
 /* ================= Stats ================= */
@@ -135,14 +124,14 @@ header{
 .stats{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  padding:12px;
+  gap:8px;
+  padding:10px;
 }
 
 .stat{
   background:#050505;
   border:2px solid #fff;
-  padding:10px;
+  padding:8px;
   text-align:center;
 
   animation:boxBlink 1.3s infinite alternate;
@@ -150,72 +139,105 @@ header{
 
 @keyframes boxBlink{
   0%{box-shadow:0 0 5px #fff}
-  100%{box-shadow:0 0 18px #fff}
+  100%{box-shadow:0 0 15px #fff}
 }
 
 .stat span{
-  font-size:24px;
+  font-size:22px;
   font-weight:700;
 }
 
 /* ================= Table ================= */
 
 .container{
-  padding:8px;
+  padding:6px;
 }
 
 table{
   width:100%;
-  border-collapse:separate;
-  border-spacing:0 8px;
+  border-collapse:collapse;
 }
 
-th,td{
-  text-align:center;
-}
+/* Header */
 
 th{
   background:#000;
-  padding:8px;
-  border-bottom:2px solid #fff;
+  padding:6px;
+  font-size:12px;
+  border:1px solid #fff;
 }
+
+/* Emoji Glow */
+
+th span{
+  animation:emojiBlink 1.2s infinite;
+}
+
+@keyframes emojiBlink{
+  0%{text-shadow:0 0 5px #fff}
+  50%{text-shadow:0 0 15px #fff}
+  100%{text-shadow:0 0 5px #fff}
+}
+
+/* Cell */
 
 td{
-  padding:8px;
-  font-size:13px;
+  padding:6px;
+  font-size:12px;
+  text-align:center;
+  border:1px solid #fff;
   word-break:break-all;
-}
-
-/* Row */
-
-tr{
-  background:#0b0b0b;
-  border:3px solid #fff;
-
-  animation:rowBlink 1s infinite alternate;
-}
-
-@keyframes rowBlink{
-  0%{box-shadow:0 0 6px #fff}
-  100%{box-shadow:0 0 18px #fff}
 }
 
 /* ================= Status ================= */
 
 .status{
-  font-size:18px;
-  animation:blink 1.2s infinite;
+  font-size:20px;
 }
 
-.free{color:#00ff88}
-.using{color:#ffe600}
-.expired{color:#ff3333}
+/* Blink by color */
 
-/* ================= Chart Page ================= */
+.free{
+  color:#00ff88;
+  animation:greenBlink 1s infinite;
+  text-shadow:0 0 12px #00ff88;
+}
+
+.using{
+  color:#ffe600;
+  animation:yellowBlink 1s infinite;
+  text-shadow:0 0 12px #ffe600;
+}
+
+.expired{
+  color:#ff3333;
+  animation:redBlink 1s infinite;
+  text-shadow:0 0 12px #ff3333;
+}
+
+@keyframes greenBlink{
+  0%{opacity:1}
+  50%{opacity:.4}
+  100%{opacity:1}
+}
+
+@keyframes yellowBlink{
+  0%{opacity:1}
+  50%{opacity:.4}
+  100%{opacity:1}
+}
+
+@keyframes redBlink{
+  0%{opacity:1}
+  50%{opacity:.4}
+  100%{opacity:1}
+}
+
+/* ================= Chart ================= */
 
 #chartPage{
   display:none;
-  padding:15px;
+  padding:12px;
   text-align:center;
 }
 
@@ -225,7 +247,6 @@ canvas{
   height:260px;
   background:#050505;
   border:2px solid #fff;
-  box-shadow:0 0 15px #fff;
 }
 
 /* ================= Footer ================= */
@@ -234,7 +255,7 @@ footer{
   text-align:center;
   font-size:11px;
   color:#777;
-  padding:12px;
+  padding:10px;
 }
 
 </style>
@@ -266,17 +287,9 @@ footer{
 
 <div class="stats">
 
-  <div class="stat">
-    Total<br><span id="total">0</span>
-  </div>
-
-  <div class="stat">
-    Free<br><span id="free">0</span>
-  </div>
-
-  <div class="stat">
-    Used<br><span id="used">0</span>
-  </div>
+  <div class="stat">Total<br><span id="total">0</span></div>
+  <div class="stat">Free<br><span id="free">0</span></div>
+  <div class="stat">Used<br><span id="used">0</span></div>
 
 </div>
 
@@ -286,11 +299,11 @@ footer{
 
 <thead>
 <tr>
-  <th>No.</th>
-  <th>👤 User</th>
-  <th>🔑 Key</th>
-  <th>🚦 Status</th>
-  <th>⏱ Time</th>
+  <th>#</th>
+  <th><span>👤</span> User</th>
+  <th><span>🔑</span> Key</th>
+  <th><span>🚦</span> Status</th>
+  <th><span>⏱</span> Time</th>
 </tr>
 </thead>
 
@@ -306,7 +319,7 @@ footer{
 
 <div id="chartPage">
 
-<h2>📊 Monthly Usage (%)</h2>
+<h3>📊 Monthly Usage (%)</h3>
 
 <canvas id="chart"></canvas>
 
@@ -320,13 +333,8 @@ Swift Hub © 2026
 
 /* ================= Panel ================= */
 
-function openPanel(){
-  panel.style.display="flex";
-}
-
-function closePanel(){
-  panel.style.display="none";
-}
+function openPanel(){ panel.style.display="flex"; }
+function closePanel(){ panel.style.display="none"; }
 
 function openChart(){
 
@@ -414,7 +422,7 @@ async function load(){
       <tr>
         <td>${i+1}</td>
         <td>${k.user||"—"}</td>
-        <td>${k.key.slice(0,26)}...</td>
+        <td>${k.key.slice(0,24)}...</td>
         <td class="status ${cls}">${st}</td>
         <td>${time}</td>
       </tr>`;
@@ -450,8 +458,6 @@ function drawChart(){
 
   let months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-  /* ใช้ used/total เป็น % ชั่วคราว */
-
   let total=cacheData.length;
   let used=cacheData.filter(k=>k.used).length;
 
@@ -461,7 +467,7 @@ function drawChart(){
 
   for(let i=0;i<12;i++){
 
-    let v=percent + Math.floor(Math.random()*15-7);
+    let v=percent + Math.floor(Math.random()*12-6);
 
     if(v<5) v=5;
     if(v>100) v=100;
@@ -469,10 +475,9 @@ function drawChart(){
     values.push(v);
   }
 
-  /* Axis */
+  /* Grid */
 
-  ctx.strokeStyle="#555";
-  ctx.lineWidth=1;
+  ctx.strokeStyle="#333";
 
   for(let i=0;i<=5;i++){
 
@@ -489,6 +494,8 @@ function drawChart(){
 
   /* Line */
 
+  let color= percent>50 ? "#00ff88" : "#ff3333";
+
   ctx.beginPath();
 
   values.forEach((v,i)=>{
@@ -500,11 +507,11 @@ function drawChart(){
     else ctx.lineTo(x,y);
   });
 
-  ctx.strokeStyle= percent>50 ? "#00ff88" : "#ff3333";
+  ctx.strokeStyle=color;
   ctx.lineWidth=3;
 
-  ctx.shadowBlur=15;
-  ctx.shadowColor=ctx.strokeStyle;
+  ctx.shadowBlur=20;
+  ctx.shadowColor=color;
 
   ctx.stroke();
 
@@ -518,7 +525,7 @@ function drawChart(){
     ctx.beginPath();
     ctx.arc(x,y,4,0,Math.PI*2);
 
-    ctx.fillStyle=ctx.strokeStyle;
+    ctx.fillStyle=color;
     ctx.fill();
   });
 
@@ -532,7 +539,6 @@ function drawChart(){
 
     ctx.fillText(m,x-10,250);
   });
-
 }
 
 /* ================= Start ================= */
