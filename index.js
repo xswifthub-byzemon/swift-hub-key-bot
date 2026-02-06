@@ -73,8 +73,7 @@ function saveDB(data) {
 
 function randomString(len = 6) {
 
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
 
   let out = "";
 
@@ -85,16 +84,12 @@ function randomString(len = 6) {
   return out;
 }
 
-// คีย์จริง
 function generateRealKey() {
-
   return `SwiftHub-${randomString(5)}-${randomString(5)}`;
 }
 
-// คีย์ชั่วคราว (Get Key)
-function generateTempKey(userId) {
-
-  return `${userId.slice(0,8)}-swifthub-${randomString(8)}`;
+function generateTempKey(uid) {
+  return `${uid.slice(0,8)}-swifthub-${randomString(8)}`;
 }
 
 // ================================
@@ -140,47 +135,51 @@ client.once("ready", () => {
 });
 
 // ================================
+// Helper
+// ================================
+
+function userHasActiveKey(db, uid){
+
+  const now = Date.now();
+
+  return db.find(k =>
+    k.user === uid &&
+    k.redeemed &&
+    k.expire > now
+  );
+}
+
+// ================================
 // Discord
 // ================================
 
 client.on(Events.InteractionCreate, async (interaction) => {
 
-  // ================================
-  // Slash
-  // ================================
+  // ================= SLASH =================
 
   if (interaction.isChatInputCommand()) {
 
-    // PANEL
     if (interaction.commandName === "panel") {
 
       const embed = new EmbedBuilder()
 
         .setTitle("🚀 Swift Hub | Key System")
 
-        .setDescription(
-`
-🔹 How To Use
-1️⃣ Press Get Key
-2️⃣ Copy Temporary Key
-3️⃣ Redeem to Activate
-4️⃣ Receive Real Key
+        .setDescription(`
+🔹 HOW TO USE
+1. Get Key
+2. Redeem
+3. Use Script
 
 📌 วิธีใช้งาน
 1. กด Get Key
-2. เอาคีย์ไป Redeem
-3. รับคีย์จริง
-4. ใช้งานได้ทันที
+2. Redeem
+3. ใช้งาน
 
-⚠️ Do not share your key!
-`
-        )
+⚠️ 1 คนใช้ได้ 1 คีย์ ต่อรอบ
+`)
 
-        .setColor(0xff3333)
-
-        .setFooter({
-          text: "Swift Hub • Secure System"
-        });
+        .setColor(0xff3333);
 
       const row = new ActionRowBuilder().addComponents(
 
@@ -197,176 +196,168 @@ client.on(Events.InteractionCreate, async (interaction) => {
         new ButtonBuilder()
           .setCustomId("info")
           .setLabel("ℹ️ Info")
-          .setStyle(ButtonStyle.Secondary)
+          .setStyle(ButtonStyle.Secondary),
+
+        new ButtonBuilder()
+          .setCustomId("reset")
+          .setLabel("♻ Reset HWID")
+          .setStyle(ButtonStyle.Danger)
       );
 
-      await interaction.reply({
-        embeds: [embed],
-        components: [row],
-        ephemeral: false
+      return interaction.reply({
+        embeds:[embed],
+        components:[row]
       });
     }
 
-    // CREATE BULK
+    // CREATE KEY
     if (interaction.commandName === "createkeybulk") {
 
-      if (interaction.user.id !== OWNER_ID) {
-
-        return interaction.reply({
-          content: "❌ Owner Only",
-          ephemeral: true
-        });
-      }
+      if (interaction.user.id !== OWNER_ID)
+        return interaction.reply({content:"❌ Owner Only",ephemeral:true});
 
       const mode = interaction.options.getString("mode");
 
-      const db = loadDB();
-
-      let hoursList = [];
-
-      if (mode === "6") hoursList = [6];
-      else if (mode === "12") hoursList = [12];
-      else if (mode === "24") hoursList = [24];
-      else if (mode === "mix") hoursList = [6,12,24];
-      else {
-
-        return interaction.reply({
-          content: "❌ Use: 6 / 12 / 24 / mix",
-          ephemeral: true
-        });
-      }
-
       let list = [];
+      let db = loadDB();
 
-      for (let i = 0; i < 50; i++) {
+      let arr = [];
 
-        const hours =
-          hoursList[Math.floor(Math.random()*hoursList.length)];
+      if(mode==="6") arr=[6];
+      else if(mode==="12") arr=[12];
+      else if(mode==="24") arr=[24];
+      else if(mode==="mix") arr=[6,12,24];
+      else return interaction.reply({content:"❌ Invalid",ephemeral:true});
 
-        const key = generateRealKey();
+      for(let i=0;i<50;i++){
+
+        let h = arr[Math.floor(Math.random()*arr.length)];
+
+        let k = generateRealKey();
 
         db.push({
 
-          key,
-          tempKey: null,
+          key:k,
+          tempKey:null,
 
-          user: null,
-          username: null,
+          user:null,
+          username:null,
 
-          redeemed: false,
+          redeemed:false,
 
-          start: null,
-          expire: null,
+          start:null,
+          expire:null,
 
-          hours,
-          paused: 0
+          hours:h,
 
+          ip:null,
+          hwid:null
         });
 
-        list.push(`${key} (${hours}h)`);
+        list.push(`${k} (${h}h)`);
       }
 
       saveDB(db);
 
-      await interaction.reply({
-        content:
-          `✅ Created 50 Keys (${mode})\n\n` +
-          "```\n" + list.join("\n") + "\n```",
-        ephemeral: true
+      interaction.reply({
+        content:"```\n"+list.join("\n")+"```",
+        ephemeral:true
       });
     }
   }
 
-  // ================================
-  // Buttons
-  // ================================
+  // ================= BUTTON =================
 
   if (interaction.isButton()) {
 
-    const db = loadDB();
+    let db = loadDB();
+    let uid = interaction.user.id;
 
     // GET KEY
-    if (interaction.customId === "getkey") {
+    if (interaction.customId==="getkey") {
 
-      const userId = interaction.user.id;
+      if(userHasActiveKey(db,uid)){
+        return interaction.reply({
+          content:"❌ You still have active key",
+          ephemeral:true
+        });
+      }
 
-      let temp = generateTempKey(userId);
+      let temp = generateTempKey(uid);
 
       db.push({
 
-        key: null,
-        tempKey: temp,
+        key:null,
+        tempKey:temp,
 
-        user: userId,
-        username: interaction.user.tag,
+        user:uid,
+        username:interaction.user.tag,
 
-        redeemed: false,
+        redeemed:false,
 
-        start: null,
-        expire: null,
+        start:null,
+        expire:null,
 
-        hours: null,
-        paused: 0
+        hours:null,
 
+        ip:null,
+        hwid:null
       });
 
       saveDB(db);
 
       return interaction.reply({
-
-        content:
-`🔑 Temporary Key:
-
-\`${temp}\`
-
-➡️ Use this to Redeem`,
-        ephemeral: true
+        content:`🔑 Temp Key:\n\`${temp}\``,
+        ephemeral:true
       });
     }
 
     // INFO
-    if (interaction.customId === "info") {
+    if(interaction.customId==="info"){
 
-      const userId = interaction.user.id;
+      let d = userHasActiveKey(db,uid);
 
-      const data = db.find(
-        k => k.user === userId && k.redeemed
-      );
+      if(!d) return interaction.reply({content:"❌ No active key",ephemeral:true});
 
-      if (!data) {
+      let left = Math.floor((d.expire-Date.now())/1000);
 
-        return interaction.reply({
-          content: "❌ No active key",
-          ephemeral: true
-        });
-      }
-
-      const now = Date.now();
-
-      const left = Math.max(
-        0,
-        Math.floor((data.expire-now)/1000)
-      );
-
-      let h = Math.floor(left/3600);
-      let m = Math.floor((left%3600)/60);
-      let s = left%60;
+      let h=Math.floor(left/3600);
+      let m=Math.floor(left%3600/60);
+      let s=left%60;
 
       return interaction.reply({
-
-        content:
-`💎 Your Key Status
-
-⏳ Time Left:
-${h}h ${m}m ${s}s
-
-✨ Enjoy Swift Hub!`,
-        ephemeral: true
+        content:`⏳ ${h}h ${m}m ${s}s`,
+        ephemeral:true
       });
     }
 
+    // RESET
+    if(interaction.customId==="reset"){
+
+      const modal = new ModalBuilder()
+        .setCustomId("reset_modal")
+        .setTitle("Reset HWID");
+
+      const input = new TextInputBuilder()
+        .setCustomId("rkey")
+        .setLabel("Enter Real Key")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(input));
+
+      return interaction.showModal(modal);
+    }
+
     // REDEEM
-    if (interaction.customId === "redeem") {
+    if(interaction.customId==="redeem"){
+
+      if(userHasActiveKey(db,uid)){
+        return interaction.reply({
+          content:"❌ Wait until key expires",
+          ephemeral:true
+        });
+      }
 
       const modal = new ModalBuilder()
         .setCustomId("redeem_modal")
@@ -374,157 +365,137 @@ ${h}h ${m}m ${s}s
 
       const input = new TextInputBuilder()
         .setCustomId("keyinput")
-        .setLabel("Enter Temporary Key")
+        .setLabel("Temp Key")
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(input)
-      );
+      modal.addComponents(new ActionRowBuilder().addComponents(input));
 
-      await interaction.showModal(modal);
+      return interaction.showModal(modal);
     }
   }
 
-  // ================================
-  // Modal
-  // ================================
+  // ================= MODAL =================
 
-  if (interaction.isModalSubmit()) {
+  if(interaction.isModalSubmit()){
 
-    if (interaction.customId === "redeem_modal") {
+    let db = loadDB();
 
-      const tempKey =
-        interaction.fields.getTextInputValue("keyinput");
+    // REDEEM
+    if(interaction.customId==="redeem_modal"){
 
-      const db = loadDB();
+      let temp = interaction.fields.getTextInputValue("keyinput");
 
-      const tempData = db.find(
-        k => k.tempKey === tempKey && !k.redeemed
-      );
+      let tempData = db.find(k=>k.tempKey===temp);
 
-      if (!tempData) {
+      if(!tempData)
+        return interaction.reply({content:"❌ Invalid",ephemeral:true});
 
-        return interaction.reply({
-          content: "❌ Invalid Key",
-          ephemeral: true
-        });
-      }
+      let real = db.find(k=>k.key && !k.redeemed);
 
-      // หา real key ว่าง
-      const real = db.find(
-        k => k.key && !k.redeemed
-      );
+      if(!real)
+        return interaction.reply({content:"❌ No Key",ephemeral:true});
 
-      if (!real) {
+      let now = Date.now();
 
-        return interaction.reply({
-          content: "❌ No real key available",
-          ephemeral: true
-        });
-      }
+      real.redeemed=true;
+      real.user=interaction.user.id;
+      real.username=interaction.user.tag;
 
-      const now = Date.now();
+      real.start=now;
+      real.expire=now+(real.hours*3600000);
 
-      real.redeemed = true;
-      real.user = interaction.user.id;
-      real.username = interaction.user.tag;
-
-      real.start = now;
-      real.expire = now + (real.hours*3600000);
-
-      // ลบ temp key
       db.splice(db.indexOf(tempData),1);
 
       saveDB(db);
 
-      await interaction.reply({
+      return interaction.reply({
+        content:`✅ Success\n\`${real.key}\``,
+        ephemeral:true
+      });
+    }
 
-        content:
-`✅ Redeem Success!
+    // RESET
+    if(interaction.customId==="reset_modal"){
 
-🎫 Your Real Key:
-\`${real.key}\`
+      let key = interaction.fields.getTextInputValue("rkey");
 
-⏱ Time: ${real.hours}h`,
-        ephemeral: true
+      let data = db.find(k=>k.key===key && k.user===interaction.user.id);
+
+      if(!data)
+        return interaction.reply({content:"❌ Invalid Key",ephemeral:true});
+
+      data.ip=null;
+      data.hwid=null;
+
+      saveDB(db);
+
+      return interaction.reply({
+        content:"✅ HWID Reset Success",
+        ephemeral:true
       });
     }
   }
-
 });
 
 // ================================
 // API
 // ================================
 
-// Verify
-app.get("/verify", (req, res) => {
+app.get("/verify",(req,res)=>{
 
-  const key = req.query.key;
+  const {key,ip,hwid}=req.query;
 
-  const db = loadDB();
+  const db=loadDB();
 
-  const data = db.find(k => k.key === key);
+  const d=db.find(k=>k.key===key);
 
-  if (!data) return res.json({ status:"invalid" });
+  if(!d) return res.json({status:"invalid"});
+  if(!d.redeemed) return res.json({status:"inactive"});
+  if(d.expire<Date.now()) return res.json({status:"expired"});
 
-  if (!data.redeemed) return res.json({ status:"inactive" });
+  // Bind HWID/IP
+  if(!d.ip && !d.hwid){
+    d.ip=ip;
+    d.hwid=hwid;
+    saveDB(db);
+  }
 
-  const now = Date.now();
-
-  if (data.expire < now)
-    return res.json({ status:"expired" });
+  if(d.ip!==ip || d.hwid!==hwid)
+    return res.json({status:"blocked"});
 
   return res.json({
-
     status:"valid",
-
-    time_left:
-      Math.floor((data.expire-now)/1000)
+    left:Math.floor((d.expire-Date.now())/1000)
   });
-
 });
 
 // Dashboard
-app.get("/api/dashboard", (req,res)=>{
+app.get("/api/dashboard",(req,res)=>{
 
-  const db = loadDB();
+  const db=loadDB();
+  const now=Date.now();
 
-  const now = Date.now();
+  res.json(db.map(k=>({
 
-  const result = db.map(k=>({
+    key:k.key,
+    user:k.username,
+    uid:k.user,
 
-    key: k.key,
-    used: k.redeemed,
-    user: k.username,
+    ip:k.ip,
+    hwid:k.hwid,
 
-    expire: k.expire,
+    used:k.redeemed,
 
-    left:
-      k.expire
-        ? Math.max(0,k.expire-now)
-        : null
-  }));
+    left:k.expire?Math.max(0,k.expire-now):null
 
-  res.json(result);
+  })));
 });
 
-// Page
-app.get("/", (req,res)=>{
-
-  res.sendFile(
-    path.join(__dirname,"public/dashboard.html")
-  );
+app.get("/",(req,res)=>{
+  res.sendFile(path.join(__dirname,"public/dashboard.html"));
 });
 
-// ================================
-// Start
-// ================================
-
-app.listen(PORT,()=>{
-
-  console.log("🌐 Dashboard Online");
-});
+app.listen(PORT,()=>console.log("🌐 Dashboard Online"));
 
 client.login(TOKEN);
