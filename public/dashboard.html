@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Swift Hub Control Panel</title>
+<title>Swift Hub Control</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
 
@@ -17,24 +17,50 @@
 
 body{
   margin:0;
-  background:#0b0b0f;
+  background:#000;
   color:#fff;
   overflow-x:hidden;
 }
 
-/* ================= Background Animation ================= */
+/* ================= Effects ================= */
 
-.bg-anime{
+.effect{
   position:fixed;
-  width:120px;
-  opacity:0.15;
-  animation:float 25s linear infinite;
+  inset:0;
+  pointer-events:none;
   z-index:-1;
 }
 
-@keyframes float{
-  from{transform:translateX(-200px);}
-  to{transform:translateX(120vw);}
+.lightning{
+  background:radial-gradient(circle,#fff,#000 70%);
+  animation:flash .2s infinite;
+}
+
+@keyframes flash{
+  0%{opacity:0}
+  50%{opacity:.8}
+  100%{opacity:0}
+}
+
+.rain{
+  background:url("https://i.imgur.com/NM6zH0s.png");
+  animation:rain 1s linear infinite;
+}
+
+@keyframes rain{
+  from{background-position:0 0}
+  to{background-position:0 500px}
+}
+
+.bw{
+  background:#000;
+  animation:bwpulse 1s infinite;
+}
+
+@keyframes bwpulse{
+  0%{background:#000}
+  50%{background:#222}
+  100%{background:#000}
 }
 
 /* ================= Header ================= */
@@ -43,60 +69,74 @@ header{
   display:flex;
   align-items:center;
   gap:12px;
-  padding:15px;
+  padding:12px;
   background:#000;
   border-bottom:2px solid #222;
 }
 
 header img{
   width:40px;
-  border-radius:50%;
 }
 
-header h1{
-  margin:0;
+.title{
   font-size:20px;
+  background:linear-gradient(90deg,#ff0000,#fff,#ff0000);
+  background-size:200%;
+  -webkit-background-clip:text;
+  color:transparent;
+  animation:title 3s linear infinite;
+}
+
+@keyframes title{
+  from{background-position:0%}
+  to{background-position:200%}
 }
 
 /* ================= Table ================= */
 
 .container{
-  padding:15px;
+  padding:10px;
 }
 
 table{
   width:100%;
-  border-collapse:collapse;
-  background:#111;
-  border-radius:12px;
-  overflow:hidden;
-}
-
-th,td{
-  padding:10px 6px;
-  font-size:12px;
-  text-align:center;
+  border-collapse:separate;
+  border-spacing:0 8px;
 }
 
 th{
-  background:#000;
+  font-size:12px;
   color:#aaa;
+  padding:8px;
 }
 
-tr:nth-child(even){
-  background:#161616;
+td{
+  padding:10px 5px;
+  font-size:11px;
+}
+
+tr{
+  background:#0d0d0d;
+  border:1px solid #333;
+}
+
+tr td:first-child{
+  border-left:2px solid #555;
+}
+
+tr td:last-child{
+  border-right:2px solid #555;
 }
 
 tr:hover{
-  background:#222;
+  background:#151515;
 }
 
 /* ================= Status ================= */
 
 .status{
   font-size:16px;
-  font-weight:700;
-  animation:blink 1.2s infinite;
+  animation:blink 1s infinite;
 }
 
 @keyframes blink{
@@ -126,7 +166,7 @@ footer{
   text-align:center;
   font-size:11px;
   color:#666;
-  padding:15px;
+  padding:12px;
 }
 
 </style>
@@ -134,17 +174,13 @@ footer{
 
 <body>
 
-<!-- Floating Background -->
-<img class="bg-anime" src="https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg" style="top:20%;animation-duration:28s;">
-<img class="bg-anime" src="https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg" style="top:60%;animation-duration:35s;">
+<div id="fx" class="effect"></div>
 
-<!-- Header -->
 <header>
   <img src="https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg">
-  <h1>Swift Hub • Key Control</h1>
+  <div class="title">Swift Hub Key Control</div>
 </header>
 
-<!-- Table -->
 <div class="container">
 
 <table>
@@ -166,70 +202,83 @@ footer{
 </div>
 
 <footer>
-Swift Hub System © 2026 • Secure
+Swift Hub © 2026
 </footer>
 
 <script>
+
+/* ===== Background Effect Switch ===== */
+
+const effects=["lightning","rain","bw"];
+let idx=0;
+
+setInterval(()=>{
+  const fx=document.getElementById("fx");
+  fx.className="effect "+effects[idx];
+  idx=(idx+1)%effects.length;
+},3000);
+
+
+/* ===== Time Format ===== */
 
 function format(ms){
 
   if(ms<=0) return "00 : 00 : 00";
 
-  let s = Math.floor(ms/1000);
+  let s=Math.floor(ms/1000);
 
-  let h = Math.floor(s/3600);
-  let m = Math.floor((s%3600)/60);
-  let se = s%60;
+  let h=Math.floor(s/3600);
+  let m=Math.floor((s%3600)/60);
+  let se=s%60;
 
   return `${String(h).padStart(2,"0")} : ${String(m).padStart(2,"0")} : ${String(se).padStart(2,"0")}`;
 }
+
+
+/* ===== Load Data ===== */
 
 async function load(){
 
   try{
 
-    const res = await fetch("/api/dashboard");
-    const data = await res.json();
+    const res=await fetch("/api/dashboard");
+    const data=await res.json();
 
-    let html = "";
+    let html="";
 
     data.forEach((k,i)=>{
 
-      let status = "";
-      let cls = "";
-      let time = "";
+      let st="",cls="",time="";
 
       if(!k.used){
 
-        status = "🟢";
-        cls = "free";
-        time = "06 : 00 : 00";
+        st="🟢";
+        cls="free";
+        time="06 : 00 : 00";
 
       }else if(k.left>0){
 
-        status = "🟡";
-        cls = "using";
-        time = format(k.left);
+        st="🟡";
+        cls="using";
+        time=format(k.left);
 
       }else{
 
-        status = "🔴";
-        cls = "expired";
-        time = "EXPIRED";
+        st="🔴";
+        cls="expired";
+        time="EXPIRED";
       }
 
-      html += `
+      html+=`
       <tr>
 
         <td>${i+1}</td>
 
-        <td>${k.user || "—"}</td>
+        <td>${k.user||"—"}</td>
 
-        <td>${k.key.slice(0,20)}...</td>
+        <td>${k.key.slice(0,22)}...</td>
 
-        <td class="status ${cls}">
-          ${status}
-        </td>
+        <td class="status ${cls}">${st}</td>
 
         <td>${time}</td>
 
@@ -237,10 +286,10 @@ async function load(){
       `;
     });
 
-    document.getElementById("data").innerHTML = html;
+    document.getElementById("data").innerHTML=html;
 
   }catch(e){
-    console.log("Load error",e);
+    console.log(e);
   }
 }
 
