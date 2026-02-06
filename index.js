@@ -1,5 +1,5 @@
 // ==================================
-// Swift Hub Key Bot
+// Swift Hub Key Bot + API
 // By Pai 💖
 // ==================================
 
@@ -20,6 +20,7 @@ const {
 } = require("discord.js");
 
 const fs = require("fs");
+const express = require("express");
 
 // ================================
 // ENV
@@ -36,6 +37,15 @@ const OWNER_ID = process.env.OWNER_ID;
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
+
+// ================================
+// Express API
+// ================================
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
 
 // ================================
 // Database
@@ -60,6 +70,7 @@ function saveDB(data) {
 // ================================
 
 function randomString(len = 8) {
+
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let out = "";
 
@@ -126,7 +137,7 @@ client.once("ready", () => {
 });
 
 // ================================
-// Interaction
+// Discord Interaction
 // ================================
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -137,10 +148,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isChatInputCommand()) {
 
-    // ============================
     // PANEL (PUBLIC)
-    // ============================
-
     if (interaction.commandName === "panel") {
 
       const embed = new EmbedBuilder()
@@ -152,7 +160,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           "🔑 Get your free key\n" +
           "✅ Redeem to activate\n" +
           "⏱ Limited time access\n\n" +
-          "⚠️ Please do not share your key!"
+          "⚠️ Do not share your key!"
         )
 
         .setColor(0x9b59ff)
@@ -182,14 +190,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await interaction.reply({
         embeds: [embed],
         components: [row],
-        ephemeral: false // <<< ทุกคนเห็น
+        ephemeral: false
       });
     }
 
-    // ============================
-    // CREATE KEY (OWNER)
-    // ============================
-
+    // CREATE KEY
     if (interaction.commandName === "createkey") {
 
       if (interaction.user.id !== OWNER_ID) {
@@ -229,10 +234,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    // ============================
     // CREATE 50 KEYS
-    // ============================
-
     if (interaction.commandName === "createkeybulk") {
 
       if (interaction.user.id !== OWNER_ID) {
@@ -288,10 +290,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
 
-    // ============================
     // GET KEY
-    // ============================
-
     if (interaction.customId === "getkey") {
 
       const db = loadDB();
@@ -307,16 +306,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       await interaction.reply({
         content:
-          `🔑 **Your Key:**\n\`${freeKey.key}\`\n\n` +
-          "⚠️ Please redeem it to activate.",
+          `🔑 Your Key:\n\`${freeKey.key}\`\n\nRedeem to activate.`,
         ephemeral: true
       });
     }
 
-    // ============================
     // REDEEM
-    // ============================
-
     if (interaction.customId === "redeem") {
 
       const modal = new ModalBuilder()
@@ -361,7 +356,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       if (data.redeemed) {
         return interaction.reply({
-          content: "❌ This key is already used.",
+          content: "❌ Key already used.",
           ephemeral: true
         });
       }
@@ -379,7 +374,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       await interaction.reply({
         content:
-          `✅ Redeem successful!\n⏱ Expires in ${data.hours} hours.`,
+          `✅ Redeem success!\n⏱ Expires in ${data.hours} hours.`,
         ephemeral: true
       });
     }
@@ -388,7 +383,65 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 // ================================
-// Auto Clear Expired Keys
+// Verify API
+// ================================
+
+app.get("/verify", (req, res) => {
+
+  const key = req.query.key;
+
+  if (!key) {
+    return res.json({
+      status: "error",
+      message: "No key"
+    });
+  }
+
+  const db = loadDB();
+
+  const data = db.find(k => k.key === key);
+
+  if (!data) {
+    return res.json({
+      status: "invalid"
+    });
+  }
+
+  if (!data.redeemed) {
+    return res.json({
+      status: "not_redeemed"
+    });
+  }
+
+  const now = Date.now();
+
+  if (data.expire && data.expire < now) {
+    return res.json({
+      status: "expired"
+    });
+  }
+
+  const timeLeft = Math.floor(
+    (data.expire - now) / 1000
+  );
+
+  return res.json({
+    status: "valid",
+    time_left: timeLeft,
+    hours: data.hours
+  });
+});
+
+// ================================
+// Start API Server
+// ================================
+
+app.listen(PORT, () => {
+  console.log(`🌐 API Running on port ${PORT}`);
+});
+
+// ================================
+// Auto Clear Expired
 // ================================
 
 setInterval(() => {
