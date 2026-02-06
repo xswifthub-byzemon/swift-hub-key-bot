@@ -10,9 +10,11 @@
 body{
   background:black;
   color:white;
-  font-family:Orbitron;
+  font-family:Orbitron,sans-serif;
   margin:0;
 }
+
+/* ================= HEADER ================= */
 
 header{
   padding:12px;
@@ -32,9 +34,23 @@ header{
 
 .back{display:none}
 
+/* Title Gradient */
+
 h1{
   font-size:22px;
+  background:linear-gradient(90deg,#fff,#ff0000,#fff);
+  background-size:300%;
+  -webkit-background-clip:text;
+  color:transparent;
+  animation:titleFlow 4s linear infinite;
 }
+
+@keyframes titleFlow{
+  from{background-position:0%}
+  to{background-position:300%}
+}
+
+/* ================= TABLE ================= */
 
 table{
   width:100%;
@@ -46,26 +62,27 @@ th,td{
   padding:5px;
   text-align:center;
   font-size:11px;
+  word-break:break-all;
 }
 
-/* Status Colors */
+/* ================= STATUS ================= */
 
 .green{
   color:#00ff88;
   animation:blink 1s infinite;
-  text-shadow:0 0 10px #00ff88;
+  text-shadow:0 0 12px #00ff88;
 }
 
 .yellow{
   color:#ffe600;
   animation:blink 1s infinite;
-  text-shadow:0 0 10px #ffe600;
+  text-shadow:0 0 12px #ffe600;
 }
 
 .red{
   color:#ff3333;
   animation:blink 1s infinite;
-  text-shadow:0 0 10px #ff3333;
+  text-shadow:0 0 12px #ff3333;
 }
 
 @keyframes blink{
@@ -73,6 +90,8 @@ th,td{
   50%{opacity:.4}
   100%{opacity:1}
 }
+
+/* ================= PANEL ================= */
 
 #panel{
   position:fixed;
@@ -83,21 +102,35 @@ th,td{
   justify-content:center;
   align-items:center;
   gap:15px;
+  z-index:99;
 }
 
 .btn{
   border:1px solid white;
   padding:10px 20px;
   cursor:pointer;
+  animation:panelBlink 1s infinite alternate;
 }
 
-#chartPage{
+@keyframes panelBlink{
+  0%{box-shadow:0 0 5px #fff}
+  100%{box-shadow:0 0 15px #fff}
+}
+
+/* ================= PAGES ================= */
+
+#chartPage,
+#dataPage{
   display:none;
   text-align:center;
+  padding:10px;
 }
+
+/* ================= CANVAS ================= */
 
 canvas{
   border:1px solid white;
+  box-shadow:0 0 15px #fff;
 }
 
 </style>
@@ -105,8 +138,11 @@ canvas{
 
 <body>
 
+<!-- MENU PANEL -->
+
 <div id="panel">
-  <div class="btn" onclick="openInfo()">📄 Data</div>
+  <div class="btn" onclick="openMain()">📋 Keys</div>
+  <div class="btn" onclick="openData()">📄 Data</div>
   <div class="btn" onclick="openChart()">📊 Chart</div>
   <div class="btn" onclick="closePanel()">❌ Close</div>
 </div>
@@ -116,9 +152,11 @@ canvas{
   <div class="menu" id="menuBtn" onclick="openPanel()">☰</div>
   <div class="back" id="backBtn" onclick="backHome()">←</div>
 
-  <h1>SWIFT HUB CONTROL</h1>
+  <h1>SWIFT HUB • KEY CONTROL</h1>
 
 </header>
+
+<!-- ================= MAIN ================= -->
 
 <div id="main">
 
@@ -127,11 +165,9 @@ canvas{
 <tr>
 <th>#</th>
 <th>User</th>
-<th>UID</th>
-<th>IP</th>
-<th>HWID</th>
 <th>Key</th>
 <th>Status</th>
+<th>Time</th>
 </tr>
 </thead>
 
@@ -140,11 +176,36 @@ canvas{
 
 </div>
 
+<!-- ================= DATA PAGE ================= -->
+
+<div id="dataPage">
+
+<h3>📄 User Data</h3>
+
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>👤 User</th>
+<th>🆔 UID</th>
+<th>🌐 IP</th>
+<th>💻 HWID</th>
+<th>🔑 Key</th>
+</tr>
+</thead>
+
+<tbody id="dataInfo"></tbody>
+</table>
+
+</div>
+
+<!-- ================= CHART ================= -->
+
 <div id="chartPage">
 
-<h3>Usage Chart</h3>
+<h3>📊 Usage Chart (%)</h3>
 
-<canvas id="chart" width="300" height="200"></canvas>
+<canvas id="chart" width="320" height="220"></canvas>
 
 <br><br>
 
@@ -156,18 +217,43 @@ canvas{
 
 let cache=[];
 
-function openPanel(){
-  panel.style.display="flex";
+/* ================= PANEL ================= */
+
+function openPanel(){ panel.style.display="flex"; }
+function closePanel(){ panel.style.display="none"; }
+
+function openMain(){
+
+  panel.style.display="none";
+
+  main.style.display="block";
+  dataPage.style.display="none";
+  chartPage.style.display="none";
+
+  menuBtn.style.display="block";
+  backBtn.style.display="none";
 }
 
-function closePanel(){
+function openData(){
+
   panel.style.display="none";
+
+  main.style.display="none";
+  dataPage.style.display="block";
+  chartPage.style.display="none";
+
+  menuBtn.style.display="none";
+  backBtn.style.display="block";
+
+  renderData();
 }
 
 function openChart(){
 
   panel.style.display="none";
+
   main.style.display="none";
+  dataPage.style.display="none";
   chartPage.style.display="block";
 
   menuBtn.style.display="none";
@@ -176,20 +262,17 @@ function openChart(){
   draw();
 }
 
-function openInfo(){
-  closePanel();
-}
-
 function backHome(){
 
-  chartPage.style.display="none";
   main.style.display="block";
+  dataPage.style.display="none";
+  chartPage.style.display="none";
 
   menuBtn.style.display="block";
   backBtn.style.display="none";
 }
 
-// ================= Load =================
+/* ================= LOAD ================= */
 
 async function load(){
 
@@ -198,97 +281,135 @@ async function load(){
 
   cache = d;
 
-  let h = "";
+  let h="";
 
   d.forEach((k,i)=>{
 
-    let st = "";
-    let cls = "";
-
-    /* ===== Status Logic ===== */
+    let st="",cls="",time="-";
 
     if(!k.used){
-      // ยังไม่ใช้
-      st = "🟢";
-      cls = "green";
 
-    }else if(k.left > 0){
-      // กำลังใช้งาน
-      st = "🟡";
-      cls = "yellow";
+      st="🟢";
+      cls="green";
+
+    }else if(k.left>0){
+
+      st="🟡";
+      cls="yellow";
+
+      time = format(k.left);
 
     }else{
-      // หมดอายุ
-      st = "🔴";
-      cls = "red";
+
+      st="🔴";
+      cls="red";
+      time="EXPIRED";
     }
 
-    h += `
+    h+=`
 <tr>
 <td>${i+1}</td>
-<td>${k.user || "-"}</td>
-<td>${k.uid || "-"}</td>
-<td>${k.ip || "-"}</td>
-<td>${k.hwid || "-"}</td>
-<td>${k.key || "-"}</td>
+<td>${k.user||"-"}</td>
+<td>${k.key||"-"}</td>
 <td class="${cls}">${st}</td>
+<td>${time}</td>
 </tr>`;
   });
 
-  data.innerHTML = h;
+  data.innerHTML=h;
 }
 
-// ================= Chart =================
+/* ================= DATA PAGE ================= */
+
+function renderData(){
+
+  let h="";
+
+  cache.forEach((k,i)=>{
+
+    h+=`
+<tr>
+<td>${i+1}</td>
+<td>${k.user||"-"}</td>
+<td>${k.uid||"-"}</td>
+<td>${k.ip||"-"}</td>
+<td>${k.hwid||"-"}</td>
+<td>${k.key||"-"}</td>
+</tr>`;
+  });
+
+  dataInfo.innerHTML=h;
+}
+
+/* ================= TIME ================= */
+
+function format(ms){
+
+  let s=Math.floor(ms/1000);
+
+  let h=Math.floor(s/3600);
+  let m=Math.floor((s%3600)/60);
+  let se=s%60;
+
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${se.toString().padStart(2,"0")}`;
+}
+
+/* ================= CHART ================= */
 
 function draw(){
 
-  let c = document.getElementById("chart");
-  let ctx = c.getContext("2d");
+  let c=chart;
+  let ctx=c.getContext("2d");
 
-  ctx.clearRect(0,0,300,200);
+  ctx.clearRect(0,0,320,220);
 
-  let total = cache.length;
-  let used = cache.filter(x=>x.used).length;
+  let total=cache.length;
+  let used=cache.filter(x=>x.used).length;
 
-  let p = total ? Math.round(used/total*100) : 0;
+  let p= total?Math.round(used/total*100):0;
 
-  let color = p>50 ? "#00ff88" : "#ff3333";
+  let color= p>50?"#00ff88":"#ff3333";
 
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 3;
-
-  ctx.shadowBlur = 15;
-  ctx.shadowColor = color;
+  ctx.strokeStyle=color;
+  ctx.lineWidth=3;
+  ctx.shadowBlur=20;
+  ctx.shadowColor=color;
 
   ctx.beginPath();
 
   for(let i=0;i<12;i++){
 
-    let v = p + Math.random()*10 - 5;
+    let v=p+Math.random()*12-6;
 
-    let x = 20 + i*22;
-    let y = 180 - v*1.5;
+    if(v<5)v=5;
+    if(v>100)v=100;
 
-    if(i==0) ctx.moveTo(x,y);
+    let x=20+i*25;
+    let y=200-v*1.7;
+
+    if(i==0)ctx.moveTo(x,y);
     else ctx.lineTo(x,y);
   }
 
   ctx.stroke();
+
+  ctx.fillStyle="#fff";
+  ctx.fillText(p+"%",260,25);
 }
 
-// ================= Download =================
+/* ================= DOWNLOAD ================= */
 
 function download(){
 
-  let a = document.createElement("a");
+  let a=document.createElement("a");
 
-  a.href = chart.toDataURL("image/png");
-  a.download = "chart.png";
+  a.href=chart.toDataURL("image/png");
+  a.download="swift_hub_chart.png";
 
   a.click();
 }
 
-// ================= Start =================
+/* ================= START ================= */
 
 load();
 setInterval(load,2000);
