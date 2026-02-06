@@ -15,7 +15,8 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  Events
+  Events,
+  EmbedBuilder
 } = require("discord.js");
 
 const fs = require("fs");
@@ -90,6 +91,15 @@ const commands = [
       opt.setName("hours")
         .setDescription("6 / 12 / 24")
         .setRequired(true)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("createkeybulk")
+    .setDescription("Create 50 Keys (Owner Only)")
+    .addIntegerOption(opt =>
+      opt.setName("hours")
+        .setDescription("6 / 12 / 24")
+        .setRequired(true)
     )
 
 ].map(cmd => cmd.toJSON());
@@ -127,8 +137,33 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isChatInputCommand()) {
 
-    // PANEL
+    // ============================
+    // PANEL (PUBLIC)
+    // ============================
+
     if (interaction.commandName === "panel") {
+
+      const embed = new EmbedBuilder()
+
+        .setTitle("🚀 Swift Hub | Key System")
+
+        .setDescription(
+          "**Welcome to Swift Hub Key System!** 💎\n\n" +
+          "🔑 Get your free key\n" +
+          "✅ Redeem to activate\n" +
+          "⏱ Limited time access\n\n" +
+          "⚠️ Please do not share your key!"
+        )
+
+        .setColor(0x9b59ff)
+
+        .setImage(
+          "https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg"
+        )
+
+        .setFooter({
+          text: "Swift Hub System • Secure & Fast 🔒"
+        });
 
       const row = new ActionRowBuilder().addComponents(
 
@@ -139,19 +174,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
         new ButtonBuilder()
           .setCustomId("redeem")
-          .setLabel("✅ Redeem")
+          .setLabel("✅ Redeem Key")
           .setStyle(ButtonStyle.Success)
 
       );
 
       await interaction.reply({
-        content: "📌 **Swift Hub | Key Panel**",
+        embeds: [embed],
         components: [row],
-        ephemeral: true
+        ephemeral: false // <<< ทุกคนเห็น
       });
     }
 
-    // CREATE KEY
+    // ============================
+    // CREATE KEY (OWNER)
+    // ============================
+
     if (interaction.commandName === "createkey") {
 
       if (interaction.user.id !== OWNER_ID) {
@@ -190,6 +228,58 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ephemeral: true
       });
     }
+
+    // ============================
+    // CREATE 50 KEYS
+    // ============================
+
+    if (interaction.commandName === "createkeybulk") {
+
+      if (interaction.user.id !== OWNER_ID) {
+        return interaction.reply({
+          content: "❌ Owner Only",
+          ephemeral: true
+        });
+      }
+
+      const hours = interaction.options.getInteger("hours");
+
+      if (![6,12,24].includes(hours)) {
+        return interaction.reply({
+          content: "❌ Use: 6 / 12 / 24",
+          ephemeral: true
+        });
+      }
+
+      const db = loadDB();
+
+      let list = [];
+
+      for (let i = 0; i < 50; i++) {
+
+        const key = generateKey();
+
+        db.push({
+          key,
+          user: null,
+          redeemed: false,
+          start: null,
+          expire: null,
+          hours
+        });
+
+        list.push(key);
+      }
+
+      saveDB(db);
+
+      await interaction.reply({
+        content:
+          `✅ Created 50 Keys (${hours}h)\n\n` +
+          "```\n" + list.join("\n") + "\n```",
+        ephemeral: true
+      });
+    }
   }
 
   // ============================
@@ -198,7 +288,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
 
+    // ============================
     // GET KEY
+    // ============================
+
     if (interaction.customId === "getkey") {
 
       const db = loadDB();
@@ -207,23 +300,28 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       if (!freeKey) {
         return interaction.reply({
-          content: "❌ No Free Key Now",
+          content: "❌ No free keys available now.",
           ephemeral: true
         });
       }
 
       await interaction.reply({
-        content: `🔑 Your Key:\n\`${freeKey.key}\`\nUse Redeem Button`,
+        content:
+          `🔑 **Your Key:**\n\`${freeKey.key}\`\n\n` +
+          "⚠️ Please redeem it to activate.",
         ephemeral: true
       });
     }
 
+    // ============================
     // REDEEM
+    // ============================
+
     if (interaction.customId === "redeem") {
 
       const modal = new ModalBuilder()
         .setCustomId("redeem_modal")
-        .setTitle("Redeem Swift Key");
+        .setTitle("Redeem Swift Hub Key");
 
       const input = new TextInputBuilder()
         .setCustomId("keyinput")
@@ -256,14 +354,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       if (!data) {
         return interaction.reply({
-          content: "❌ Invalid Key",
+          content: "❌ Invalid key.",
           ephemeral: true
         });
       }
 
       if (data.redeemed) {
         return interaction.reply({
-          content: "❌ Already Used",
+          content: "❌ This key is already used.",
           ephemeral: true
         });
       }
@@ -281,7 +379,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       await interaction.reply({
         content:
-          `✅ Redeemed Success!\n⏱ Expires in ${data.hours}h`,
+          `✅ Redeem successful!\n⏱ Expires in ${data.hours} hours.`,
         ephemeral: true
       });
     }
