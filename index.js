@@ -1,5 +1,5 @@
 // ==================================
-// Swift Hub Key Bot + Dashboard + Excel Export
+// Swift Hub Key Bot (STABLE VERSION)
 // By Pai 💖
 // ==================================
 
@@ -20,7 +20,6 @@ const {
 
 const fs = require("fs");
 const express = require("express");
-const XLSX = require("xlsx");
 
 // ================================
 // ENV
@@ -39,7 +38,7 @@ const client = new Client({
 });
 
 // ================================
-// Web Server
+// Web
 // ================================
 
 const app = express();
@@ -71,6 +70,7 @@ function saveDB(data) {
 // ================================
 
 function randomString(len = 8) {
+
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let out = "";
 
@@ -93,7 +93,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("panel")
-    .setDescription("Open Swift Hub Key Panel"),
+    .setDescription("Open Swift Hub Panel"),
 
   new SlashCommandBuilder()
     .setName("createkeybulk")
@@ -128,7 +128,7 @@ client.once("ready", () => {
 });
 
 // ================================
-// Discord Interaction
+// Interaction
 // ================================
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -182,7 +182,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
 
       const db = loadDB();
-      const keys = [];
 
       for(let i=0;i<50;i++){
 
@@ -196,8 +195,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
           expire: null,
           hours
         });
-
-        keys.push(key);
       }
 
       saveDB(db);
@@ -278,7 +275,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       if (data.redeemed) {
         return interaction.reply({
-          content: "❌ Used Already",
+          content: "❌ Already Used",
           ephemeral: true
         });
       }
@@ -307,7 +304,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // Dashboard API
 // ================================
 
-app.get("/api/dashboard", (req,res)=>{
+app.get("/api/dashboard",(req,res)=>{
 
   const db = loadDB();
   const now = Date.now();
@@ -332,48 +329,7 @@ app.get("/api/dashboard", (req,res)=>{
 });
 
 // ================================
-// ✅ EXPORT EXCEL API
-// ================================
-
-app.get("/api/export",(req,res)=>{
-
-  const db = loadDB();
-
-  const rows = db.map((k,i)=>{
-
-    let status = "FREE";
-
-    if(k.redeemed && k.expire){
-      status = k.expire > Date.now() ? "USING" : "EXPIRED";
-    }
-
-    return {
-      No: i+1,
-      Key: k.key,
-      User: k.user || "-",
-      Status: status,
-      Hours: k.hours,
-      Start: k.start ? new Date(k.start).toLocaleString() : "-",
-      Expire: k.expire ? new Date(k.expire).toLocaleString() : "-"
-    };
-  });
-
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(rows);
-
-  XLSX.utils.book_append_sheet(wb, ws, "SwiftKeys");
-
-  const buffer = XLSX.write(wb,{ type:"buffer", bookType:"xlsx" });
-
-  res.setHeader("Content-Disposition","attachment; filename=swift-keys.xlsx");
-  res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-  res.send(buffer);
-
-});
-
-// ================================
-// Auto Clear Expired
+// Auto Clear
 // ================================
 
 setInterval(()=>{
@@ -388,7 +344,7 @@ setInterval(()=>{
 },60000);
 
 // ================================
-// Start Server
+// Start
 // ================================
 
 app.listen(PORT,()=>{
