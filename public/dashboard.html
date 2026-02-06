@@ -2,116 +2,131 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<title>Swift Hub Dashboard</title>
+<title>Swift Hub Control Panel</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 
 *{
   box-sizing:border-box;
-  font-family:'Inter',sans-serif;
+  font-family:"Orbitron",sans-serif;
 }
 
 body{
   margin:0;
-  background:linear-gradient(135deg,#0f0f1a,#18182f);
+  background:#0b0b0f;
   color:#fff;
+  overflow-x:hidden;
 }
 
-/* Header */
+/* ================= Background Animation ================= */
+
+.bg-anime{
+  position:fixed;
+  width:120px;
+  opacity:0.15;
+  animation:float 25s linear infinite;
+  z-index:-1;
+}
+
+@keyframes float{
+  from{transform:translateX(-200px);}
+  to{transform:translateX(120vw);}
+}
+
+/* ================= Header ================= */
 
 header{
-  padding:20px;
-  background:rgba(106,76,255,0.15);
-  backdrop-filter:blur(10px);
-  text-align:center;
-  border-bottom:1px solid rgba(255,255,255,0.1);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:15px;
+  background:#000;
+  border-bottom:2px solid #222;
+}
+
+header img{
+  width:40px;
+  border-radius:50%;
 }
 
 header h1{
   margin:0;
-  font-size:24px;
+  font-size:20px;
 }
 
-header p{
-  margin:6px 0 0;
-  color:#bbb;
-  font-size:13px;
-}
+/* ================= Table ================= */
 
-/* Stats */
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
+.container{
   padding:15px;
 }
 
-.stat{
-  background:#1b1b33;
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#111;
   border-radius:12px;
-  padding:12px;
+  overflow:hidden;
+}
+
+th,td{
+  padding:10px 6px;
+  font-size:12px;
   text-align:center;
 }
 
-.stat h2{
-  margin:0;
-  font-size:20px;
-  color:#6a4cff;
-}
-
-.stat span{
-  font-size:12px;
+th{
+  background:#000;
   color:#aaa;
 }
 
-/* Cards */
-
-.list{
-  padding:10px;
+tr:nth-child(even){
+  background:#161616;
 }
 
-.card{
-  background:rgba(30,30,60,0.9);
-  border-radius:15px;
-  padding:14px;
-  margin-bottom:12px;
-  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+tr:hover{
+  background:#222;
 }
 
-.key{
-  font-size:12px;
-  word-break:break-all;
-  color:#aaa;
+/* ================= Status ================= */
+
+.status{
+  font-size:16px;
+  font-weight:700;
+  animation:blink 1.2s infinite;
 }
 
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:6px;
-  font-size:13px;
+@keyframes blink{
+  0%{opacity:1}
+  50%{opacity:.4}
+  100%{opacity:1}
 }
 
 .free{
-  color:#4cff8f;
-  font-weight:600;
+  color:#00ff88;
+  text-shadow:0 0 10px #00ff88;
 }
 
-.used{
-  color:#ff6b6b;
-  font-weight:600;
+.using{
+  color:#ffe600;
+  text-shadow:0 0 10px #ffe600;
 }
 
-.footer{
+.expired{
+  color:#ff3333;
+  text-shadow:0 0 10px #ff3333;
+}
+
+/* ================= Footer ================= */
+
+footer{
   text-align:center;
-  padding:15px;
   font-size:11px;
-  color:#777;
+  color:#666;
+  padding:15px;
 }
 
 </style>
@@ -119,37 +134,55 @@ header p{
 
 <body>
 
+<!-- Floating Background -->
+<img class="bg-anime" src="https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg" style="top:20%;animation-duration:28s;">
+<img class="bg-anime" src="https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg" style="top:60%;animation-duration:35s;">
+
+<!-- Header -->
 <header>
-  <h1>🚀 Swift Hub Dashboard</h1>
-  <p>Live Key Monitoring System</p>
+  <img src="https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg">
+  <h1>Swift Hub • Key Control</h1>
 </header>
 
-<div class="stats">
+<!-- Table -->
+<div class="container">
 
-  <div class="stat">
-    <h2 id="total">0</h2>
-    <span>Total Keys</span>
-  </div>
+<table>
 
-  <div class="stat">
-    <h2 id="free">0</h2>
-    <span>Free</span>
-  </div>
+<thead>
+<tr>
+  <th>#</th>
+  <th>👤 User</th>
+  <th>🔑 Key</th>
+  <th>🚦 Status</th>
+  <th>⏱ Time</th>
+</tr>
+</thead>
 
-  <div class="stat">
-    <h2 id="used">0</h2>
-    <span>Used</span>
-  </div>
+<tbody id="data"></tbody>
+
+</table>
 
 </div>
 
-<div class="list" id="list"></div>
-
-<div class="footer">
-  Swift Hub © 2026 • Secure System
-</div>
+<footer>
+Swift Hub System © 2026 • Secure
+</footer>
 
 <script>
+
+function format(ms){
+
+  if(ms<=0) return "00 : 00 : 00";
+
+  let s = Math.floor(ms/1000);
+
+  let h = Math.floor(s/3600);
+  let m = Math.floor((s%3600)/60);
+  let se = s%60;
+
+  return `${String(h).padStart(2,"0")} : ${String(m).padStart(2,"0")} : ${String(se).padStart(2,"0")}`;
+}
 
 async function load(){
 
@@ -158,58 +191,53 @@ async function load(){
     const res = await fetch("/api/dashboard");
     const data = await res.json();
 
-    let total = data.length;
-    let free = 0;
-    let used = 0;
-
     let html = "";
 
-    data.forEach(k=>{
+    data.forEach((k,i)=>{
 
-      if(k.used) used++;
-      else free++;
+      let status = "";
+      let cls = "";
+      let time = "";
 
-      let left = "-";
+      if(!k.used){
 
-      if(k.left !== null){
+        status = "🟢";
+        cls = "free";
+        time = "06 : 00 : 00";
 
-        let min = Math.floor(k.left/1000/60);
-        let sec = Math.floor((k.left/1000)%60);
+      }else if(k.left>0){
 
-        left = min+"m "+sec+"s";
+        status = "🟡";
+        cls = "using";
+        time = format(k.left);
+
+      }else{
+
+        status = "🔴";
+        cls = "expired";
+        time = "EXPIRED";
       }
 
       html += `
-      <div class="card">
+      <tr>
 
-        <div class="key">${k.key}</div>
+        <td>${i+1}</td>
 
-        <div class="row">
-          <span>Status:</span>
-          <span class="${k.used?"used":"free"}">
-            ${k.used?"USED":"FREE"}
-          </span>
-        </div>
+        <td>${k.user || "—"}</td>
 
-        <div class="row">
-          <span>User:</span>
-          <span>${k.user||"-"}</span>
-        </div>
+        <td>${k.key.slice(0,20)}...</td>
 
-        <div class="row">
-          <span>Time Left:</span>
-          <span>${left}</span>
-        </div>
+        <td class="status ${cls}">
+          ${status}
+        </td>
 
-      </div>
+        <td>${time}</td>
+
+      </tr>
       `;
     });
 
-    document.getElementById("list").innerHTML = html;
-
-    document.getElementById("total").innerText = total;
-    document.getElementById("free").innerText = free;
-    document.getElementById("used").innerText = used;
+    document.getElementById("data").innerHTML = html;
 
   }catch(e){
     console.log("Load error",e);
@@ -217,10 +245,9 @@ async function load(){
 }
 
 load();
-setInterval(load,3000);
+setInterval(load,1000);
 
 </script>
 
 </body>
 </html>
-
