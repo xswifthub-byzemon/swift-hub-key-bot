@@ -1,5 +1,5 @@
 // ==================================
-// Swift Hub Key Bot + API
+// Swift Hub Key Bot + API + Dashboard
 // By Pai 💖
 // ==================================
 
@@ -21,6 +21,7 @@ const {
 
 const fs = require("fs");
 const express = require("express");
+const path = require("path");
 
 // ================================
 // ENV
@@ -39,13 +40,14 @@ const client = new Client({
 });
 
 // ================================
-// Express API
+// Express
 // ================================
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(express.static("public"));
 
 // ================================
 // Database
@@ -96,15 +98,6 @@ const commands = [
     .setDescription("Open Swift Hub Key Panel"),
 
   new SlashCommandBuilder()
-    .setName("createkey")
-    .setDescription("Create Key (Owner Only)")
-    .addIntegerOption(opt =>
-      opt.setName("hours")
-        .setDescription("6 / 12 / 24")
-        .setRequired(true)
-    ),
-
-  new SlashCommandBuilder()
     .setName("createkeybulk")
     .setDescription("Create 50 Keys (Owner Only)")
     .addIntegerOption(opt =>
@@ -124,7 +117,7 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
     { body: commands }
   );
 
-  console.log("✅ Slash Commands Registered");
+  console.log("✅ Commands Loaded");
 
 })();
 
@@ -137,18 +130,14 @@ client.once("ready", () => {
 });
 
 // ================================
-// Discord Interaction
+// Discord
 // ================================
 
 client.on(Events.InteractionCreate, async (interaction) => {
 
-  // ============================
-  // Slash Commands
-  // ============================
-
   if (interaction.isChatInputCommand()) {
 
-    // PANEL (PUBLIC)
+    // PANEL
     if (interaction.commandName === "panel") {
 
       const embed = new EmbedBuilder()
@@ -156,7 +145,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
         .setTitle("🚀 Swift Hub | Key System")
 
         .setDescription(
-          "**Welcome to Swift Hub Key System!** 💎\n\n" +
           "🔑 Get your free key\n" +
           "✅ Redeem to activate\n" +
           "⏱ Limited time access\n\n" +
@@ -170,7 +158,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         )
 
         .setFooter({
-          text: "Swift Hub System • Secure & Fast 🔒"
+          text: "Swift Hub • Secure System 🔒"
         });
 
       const row = new ActionRowBuilder().addComponents(
@@ -182,7 +170,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
         new ButtonBuilder()
           .setCustomId("redeem")
-          .setLabel("✅ Redeem Key")
+          .setLabel("✅ Redeem")
           .setStyle(ButtonStyle.Success)
 
       );
@@ -191,46 +179,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
         embeds: [embed],
         components: [row],
         ephemeral: false
-      });
-    }
-
-    // CREATE KEY
-    if (interaction.commandName === "createkey") {
-
-      if (interaction.user.id !== OWNER_ID) {
-        return interaction.reply({
-          content: "❌ Owner Only",
-          ephemeral: true
-        });
-      }
-
-      const hours = interaction.options.getInteger("hours");
-
-      if (![6,12,24].includes(hours)) {
-        return interaction.reply({
-          content: "❌ Use: 6 / 12 / 24",
-          ephemeral: true
-        });
-      }
-
-      const db = loadDB();
-
-      const key = generateKey();
-
-      db.push({
-        key,
-        user: null,
-        redeemed: false,
-        start: null,
-        expire: null,
-        hours
-      });
-
-      saveDB(db);
-
-      await interaction.reply({
-        content: `✅ Key Created:\n\`${key}\`\n⏱ ${hours} Hours`,
-        ephemeral: true
       });
     }
 
@@ -246,13 +194,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const hours = interaction.options.getInteger("hours");
 
-      if (![6,12,24].includes(hours)) {
-        return interaction.reply({
-          content: "❌ Use: 6 / 12 / 24",
-          ephemeral: true
-        });
-      }
-
       const db = loadDB();
 
       let list = [];
@@ -264,6 +205,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         db.push({
           key,
           user: null,
+          username: null,
           redeemed: false,
           start: null,
           expire: null,
@@ -284,10 +226,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
-  // ============================
   // Buttons
-  // ============================
-
   if (interaction.isButton()) {
 
     // GET KEY
@@ -295,18 +234,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const db = loadDB();
 
-      const freeKey = db.find(k => !k.redeemed);
+      const free = db.find(k => !k.redeemed);
 
-      if (!freeKey) {
+      if (!free) {
         return interaction.reply({
-          content: "❌ No free keys available now.",
+          content: "❌ No free keys.",
           ephemeral: true
         });
       }
 
       await interaction.reply({
-        content:
-          `🔑 Your Key:\n\`${freeKey.key}\`\n\nRedeem to activate.`,
+        content: `🔑 Your Key:\n\`${free.key}\``,
         ephemeral: true
       });
     }
@@ -316,11 +254,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const modal = new ModalBuilder()
         .setCustomId("redeem_modal")
-        .setTitle("Redeem Swift Hub Key");
+        .setTitle("Redeem Key");
 
       const input = new TextInputBuilder()
         .setCustomId("keyinput")
-        .setLabel("Enter Your Key")
+        .setLabel("Enter Key")
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
@@ -332,49 +270,43 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
-  // ============================
   // Modal
-  // ============================
-
   if (interaction.isModalSubmit()) {
 
     if (interaction.customId === "redeem_modal") {
 
-      const keyInput =
-        interaction.fields.getTextInputValue("keyinput");
+      const key = interaction.fields.getTextInputValue("keyinput");
 
       const db = loadDB();
 
-      const data = db.find(k => k.key === keyInput);
+      const data = db.find(k => k.key === key);
 
       if (!data) {
         return interaction.reply({
-          content: "❌ Invalid key.",
+          content: "❌ Invalid key",
           ephemeral: true
         });
       }
 
       if (data.redeemed) {
         return interaction.reply({
-          content: "❌ Key already used.",
+          content: "❌ Used key",
           ephemeral: true
         });
       }
 
       const now = Date.now();
-      const expire =
-        now + (data.hours * 60 * 60 * 1000);
 
       data.redeemed = true;
       data.user = interaction.user.id;
+      data.username = interaction.user.tag;
       data.start = now;
-      data.expire = expire;
+      data.expire = now + (data.hours * 3600000);
 
       saveDB(db);
 
       await interaction.reply({
-        content:
-          `✅ Redeem success!\n⏱ Expires in ${data.hours} hours.`,
+        content: "✅ Redeem Success!",
         ephemeral: true
       });
     }
@@ -383,78 +315,65 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 // ================================
-// Verify API
+// API
 // ================================
 
+// Verify
 app.get("/verify", (req, res) => {
 
   const key = req.query.key;
-
-  if (!key) {
-    return res.json({
-      status: "error",
-      message: "No key"
-    });
-  }
 
   const db = loadDB();
 
   const data = db.find(k => k.key === key);
 
-  if (!data) {
-    return res.json({
-      status: "invalid"
-    });
-  }
+  if (!data) return res.json({ status: "invalid" });
 
-  if (!data.redeemed) {
-    return res.json({
-      status: "not_redeemed"
-    });
-  }
+  if (!data.redeemed) return res.json({ status: "not_redeemed" });
 
   const now = Date.now();
 
-  if (data.expire && data.expire < now) {
-    return res.json({
-      status: "expired"
-    });
-  }
-
-  const timeLeft = Math.floor(
-    (data.expire - now) / 1000
-  );
+  if (data.expire < now) return res.json({ status: "expired" });
 
   return res.json({
     status: "valid",
-    time_left: timeLeft,
-    hours: data.hours
+    time_left: Math.floor((data.expire - now) / 1000)
   });
+
 });
 
-// ================================
-// Start API Server
-// ================================
+// Dashboard Data
+app.get("/api/dashboard", (req, res) => {
 
-app.listen(PORT, () => {
-  console.log(`🌐 API Running on port ${PORT}`);
-});
-
-// ================================
-// Auto Clear Expired
-// ================================
-
-setInterval(() => {
-
-  let db = loadDB();
+  const db = loadDB();
 
   const now = Date.now();
 
-  db = db.filter(k => !k.expire || k.expire > now);
+  const result = db.map(k => ({
 
-  saveDB(db);
+    key: k.key,
+    used: k.redeemed,
+    user: k.username,
+    expire: k.expire,
+    left: k.expire ? Math.max(0, k.expire - now) : null
 
-}, 60000);
+  }));
+
+  res.json(result);
+});
+
+// Dashboard Page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/dashboard.html"));
+});
+
+// ================================
+// Start Server
+// ================================
+
+app.listen(PORT, () => {
+  console.log("🌐 Web Dashboard Online");
+});
 
 // ================================
 
