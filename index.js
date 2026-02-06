@@ -1,5 +1,5 @@
 // ==================================
-// Swift Hub Key Bot + API + Dashboard
+// Swift Hub Key Bot + Dashboard + Excel Export
 // By Pai 💖
 // ==================================
 
@@ -15,13 +15,12 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  Events,
-  EmbedBuilder
+  Events
 } = require("discord.js");
 
 const fs = require("fs");
 const express = require("express");
-const path = require("path");
+const XLSX = require("xlsx");
 
 // ================================
 // ENV
@@ -40,14 +39,14 @@ const client = new Client({
 });
 
 // ================================
-// Express
+// Web Server
 // ================================
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
 app.use(express.json());
 app.use(express.static("public"));
+
+const PORT = process.env.PORT || 3000;
 
 // ================================
 // Database
@@ -72,7 +71,6 @@ function saveDB(data) {
 // ================================
 
 function randomString(len = 8) {
-
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let out = "";
 
@@ -99,7 +97,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("createkeybulk")
-    .setDescription("Create 50 Keys (Owner Only)")
+    .setDescription("Create 50 Keys (Owner)")
     .addIntegerOption(opt =>
       opt.setName("hours")
         .setDescription("6 / 12 / 24")
@@ -117,7 +115,7 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
     { body: commands }
   );
 
-  console.log("✅ Commands Loaded");
+  console.log("✅ Slash Commands Registered");
 
 })();
 
@@ -130,36 +128,19 @@ client.once("ready", () => {
 });
 
 // ================================
-// Discord
+// Discord Interaction
 // ================================
 
 client.on(Events.InteractionCreate, async (interaction) => {
+
+  // ============================
+  // Slash
+  // ============================
 
   if (interaction.isChatInputCommand()) {
 
     // PANEL
     if (interaction.commandName === "panel") {
-
-      const embed = new EmbedBuilder()
-
-        .setTitle("🚀 Swift Hub | Key System")
-
-        .setDescription(
-          "🔑 Get your free key\n" +
-          "✅ Redeem to activate\n" +
-          "⏱ Limited time access\n\n" +
-          "⚠️ Do not share your key!"
-        )
-
-        .setColor(0x9b59ff)
-
-        .setImage(
-          "https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg"
-        )
-
-        .setFooter({
-          text: "Swift Hub • Secure System 🔒"
-        });
 
       const row = new ActionRowBuilder().addComponents(
 
@@ -176,13 +157,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       );
 
       await interaction.reply({
-        embeds: [embed],
-        components: [row],
-        ephemeral: false
+        content: "📌 **Swift Hub Key Panel**",
+        components: [row]
       });
     }
 
-    // CREATE 50 KEYS
+    // CREATE BULK
     if (interaction.commandName === "createkeybulk") {
 
       if (interaction.user.id !== OWNER_ID) {
@@ -194,57 +174,62 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       const hours = interaction.options.getInteger("hours");
 
+      if (![6,12,24].includes(hours)) {
+        return interaction.reply({
+          content: "❌ Use: 6 / 12 / 24",
+          ephemeral: true
+        });
+      }
+
       const db = loadDB();
+      const keys = [];
 
-      let list = [];
-
-      for (let i = 0; i < 50; i++) {
+      for(let i=0;i<50;i++){
 
         const key = generateKey();
 
         db.push({
           key,
           user: null,
-          username: null,
           redeemed: false,
           start: null,
           expire: null,
           hours
         });
 
-        list.push(key);
+        keys.push(key);
       }
 
       saveDB(db);
 
       await interaction.reply({
-        content:
-          `✅ Created 50 Keys (${hours}h)\n\n` +
-          "```\n" + list.join("\n") + "\n```",
+        content: `✅ Created 50 Keys (${hours}h)`,
         ephemeral: true
       });
     }
   }
 
+  // ============================
   // Buttons
+  // ============================
+
   if (interaction.isButton()) {
 
-    // GET KEY
+    // GET
     if (interaction.customId === "getkey") {
 
       const db = loadDB();
+      const freeKey = db.find(k => !k.redeemed);
 
-      const free = db.find(k => !k.redeemed);
-
-      if (!free) {
+      if (!freeKey) {
         return interaction.reply({
-          content: "❌ No free keys.",
+          content: "❌ No Free Key",
           ephemeral: true
         });
       }
 
       await interaction.reply({
-        content: `🔑 Your Key:\n\`${free.key}\``,
+        content: `🔑 Your Key:\n\`${freeKey.key}\``,
         ephemeral: true
       });
     }
@@ -270,43 +255,47 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
+  // ============================
   // Modal
+  // ============================
+
   if (interaction.isModalSubmit()) {
 
     if (interaction.customId === "redeem_modal") {
 
-      const key = interaction.fields.getTextInputValue("keyinput");
+      const keyInput =
+        interaction.fields.getTextInputValue("keyinput");
 
       const db = loadDB();
-
-      const data = db.find(k => k.key === key);
+      const data = db.find(k => k.key === keyInput);
 
       if (!data) {
         return interaction.reply({
-          content: "❌ Invalid key",
+          content: "❌ Invalid Key",
           ephemeral: true
         });
       }
 
       if (data.redeemed) {
         return interaction.reply({
-          content: "❌ Used key",
+          content: "❌ Used Already",
           ephemeral: true
         });
       }
 
       const now = Date.now();
+      const expire =
+        now + (data.hours * 3600000);
 
       data.redeemed = true;
-      data.user = interaction.user.id;
-      data.username = interaction.user.tag;
+      data.user = interaction.user.tag;
       data.start = now;
-      data.expire = now + (data.hours * 3600000);
+      data.expire = expire;
 
       saveDB(db);
 
       await interaction.reply({
-        content: "✅ Redeem Success!",
+        content: `✅ Redeemed (${data.hours}h)`,
         ephemeral: true
       });
     }
@@ -315,66 +304,95 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 // ================================
-// API
+// Dashboard API
 // ================================
 
-// Verify
-app.get("/verify", (req, res) => {
-
-  const key = req.query.key;
+app.get("/api/dashboard", (req,res)=>{
 
   const db = loadDB();
-
-  const data = db.find(k => k.key === key);
-
-  if (!data) return res.json({ status: "invalid" });
-
-  if (!data.redeemed) return res.json({ status: "not_redeemed" });
-
   const now = Date.now();
 
-  if (data.expire < now) return res.json({ status: "expired" });
+  const data = db.map(k=>{
 
-  return res.json({
-    status: "valid",
-    time_left: Math.floor((data.expire - now) / 1000)
+    let left = 0;
+
+    if(k.expire){
+      left = Math.max(0, k.expire - now);
+    }
+
+    return {
+      key: k.key,
+      user: k.user,
+      used: k.redeemed,
+      left
+    };
   });
 
+  res.json(data);
 });
 
-// Dashboard Data
-app.get("/api/dashboard", (req, res) => {
+// ================================
+// ✅ EXPORT EXCEL API
+// ================================
+
+app.get("/api/export",(req,res)=>{
 
   const db = loadDB();
 
+  const rows = db.map((k,i)=>{
+
+    let status = "FREE";
+
+    if(k.redeemed && k.expire){
+      status = k.expire > Date.now() ? "USING" : "EXPIRED";
+    }
+
+    return {
+      No: i+1,
+      Key: k.key,
+      User: k.user || "-",
+      Status: status,
+      Hours: k.hours,
+      Start: k.start ? new Date(k.start).toLocaleString() : "-",
+      Expire: k.expire ? new Date(k.expire).toLocaleString() : "-"
+    };
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  XLSX.utils.book_append_sheet(wb, ws, "SwiftKeys");
+
+  const buffer = XLSX.write(wb,{ type:"buffer", bookType:"xlsx" });
+
+  res.setHeader("Content-Disposition","attachment; filename=swift-keys.xlsx");
+  res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+  res.send(buffer);
+
+});
+
+// ================================
+// Auto Clear Expired
+// ================================
+
+setInterval(()=>{
+
+  let db = loadDB();
   const now = Date.now();
 
-  const result = db.map(k => ({
+  db = db.filter(k => !k.expire || k.expire > now);
 
-    key: k.key,
-    used: k.redeemed,
-    user: k.username,
-    expire: k.expire,
-    left: k.expire ? Math.max(0, k.expire - now) : null
+  saveDB(db);
 
-  }));
-
-  res.json(result);
-});
-
-// Dashboard Page
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/dashboard.html"));
-});
+},60000);
 
 // ================================
 // Start Server
 // ================================
 
-app.listen(PORT, () => {
-  console.log("🌐 Web Dashboard Online");
+app.listen(PORT,()=>{
+  console.log("🌐 Web Running:",PORT);
 });
-
-// ================================
 
 client.login(TOKEN);
