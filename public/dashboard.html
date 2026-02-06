@@ -1,1 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<title>Swift Hub Dashboard</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+  box-sizing:border-box;
+  font-family:'Inter',sans-serif;
+}
+
+body{
+  margin:0;
+  background:linear-gradient(135deg,#0f0f1a,#18182f);
+  color:#fff;
+}
+
+/* Header */
+
+header{
+  padding:20px;
+  background:rgba(106,76,255,0.15);
+  backdrop-filter:blur(10px);
+  text-align:center;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+header h1{
+  margin:0;
+  font-size:24px;
+}
+
+header p{
+  margin:6px 0 0;
+  color:#bbb;
+  font-size:13px;
+}
+
+/* Stats */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:15px;
+}
+
+.stat{
+  background:#1b1b33;
+  border-radius:12px;
+  padding:12px;
+  text-align:center;
+}
+
+.stat h2{
+  margin:0;
+  font-size:20px;
+  color:#6a4cff;
+}
+
+.stat span{
+  font-size:12px;
+  color:#aaa;
+}
+
+/* Cards */
+
+.list{
+  padding:10px;
+}
+
+.card{
+  background:rgba(30,30,60,0.9);
+  border-radius:15px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+}
+
+.key{
+  font-size:12px;
+  word-break:break-all;
+  color:#aaa;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:6px;
+  font-size:13px;
+}
+
+.free{
+  color:#4cff8f;
+  font-weight:600;
+}
+
+.used{
+  color:#ff6b6b;
+  font-weight:600;
+}
+
+.footer{
+  text-align:center;
+  padding:15px;
+  font-size:11px;
+  color:#777;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🚀 Swift Hub Dashboard</h1>
+  <p>Live Key Monitoring System</p>
+</header>
+
+<div class="stats">
+
+  <div class="stat">
+    <h2 id="total">0</h2>
+    <span>Total Keys</span>
+  </div>
+
+  <div class="stat">
+    <h2 id="free">0</h2>
+    <span>Free</span>
+  </div>
+
+  <div class="stat">
+    <h2 id="used">0</h2>
+    <span>Used</span>
+  </div>
+
+</div>
+
+<div class="list" id="list"></div>
+
+<div class="footer">
+  Swift Hub © 2026 • Secure System
+</div>
+
+<script>
+
+async function load(){
+
+  try{
+
+    const res = await fetch("/api/dashboard");
+    const data = await res.json();
+
+    let total = data.length;
+    let free = 0;
+    let used = 0;
+
+    let html = "";
+
+    data.forEach(k=>{
+
+      if(k.used) used++;
+      else free++;
+
+      let left = "-";
+
+      if(k.left !== null){
+
+        let min = Math.floor(k.left/1000/60);
+        let sec = Math.floor((k.left/1000)%60);
+
+        left = min+"m "+sec+"s";
+      }
+
+      html += `
+      <div class="card">
+
+        <div class="key">${k.key}</div>
+
+        <div class="row">
+          <span>Status:</span>
+          <span class="${k.used?"used":"free"}">
+            ${k.used?"USED":"FREE"}
+          </span>
+        </div>
+
+        <div class="row">
+          <span>User:</span>
+          <span>${k.user||"-"}</span>
+        </div>
+
+        <div class="row">
+          <span>Time Left:</span>
+          <span>${left}</span>
+        </div>
+
+      </div>
+      `;
+    });
+
+    document.getElementById("list").innerHTML = html;
+
+    document.getElementById("total").innerText = total;
+    document.getElementById("free").innerText = free;
+    document.getElementById("used").innerText = used;
+
+  }catch(e){
+    console.log("Load error",e);
+  }
+}
+
+load();
+setInterval(load,3000);
+
+</script>
+
+</body>
+</html>
 
