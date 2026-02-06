@@ -22,45 +22,45 @@ body{
   overflow-x:hidden;
 }
 
-/* ================= Effects ================= */
+/* ================= Background Effect ================= */
 
-.effect{
+#bg{
   position:fixed;
   inset:0;
-  pointer-events:none;
   z-index:-1;
+  opacity:0.15;
+  transition:1s;
 }
 
-.lightning{
-  background:radial-gradient(circle,#fff,#000 70%);
-  animation:flash .2s infinite;
+.effect1{
+  background:linear-gradient(180deg,#fff,#000,#fff);
+  animation:flow1 8s linear infinite;
 }
 
-@keyframes flash{
-  0%{opacity:0}
-  50%{opacity:.8}
-  100%{opacity:0}
+@keyframes flow1{
+  from{background-position:0% 0%}
+  to{background-position:0% 200%}
 }
 
-.rain{
-  background:url("https://i.imgur.com/NM6zH0s.png");
-  animation:rain 1s linear infinite;
+.effect2{
+  background:linear-gradient(90deg,#000,#fff,#000);
+  animation:flow2 8s linear infinite;
 }
 
-@keyframes rain{
-  from{background-position:0 0}
-  to{background-position:0 500px}
+@keyframes flow2{
+  from{background-position:0%}
+  to{background-position:200%}
 }
 
-.bw{
-  background:#000;
-  animation:bwpulse 1s infinite;
+.effect3{
+  background:radial-gradient(circle,#fff,#000,#000);
+  animation:wave 6s ease-in-out infinite;
 }
 
-@keyframes bwpulse{
-  0%{background:#000}
-  50%{background:#222}
-  100%{background:#000}
+@keyframes wave{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.2)}
+  100%{transform:scale(1)}
 }
 
 /* ================= Header ================= */
@@ -75,19 +75,37 @@ header{
 }
 
 header img{
-  width:40px;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
 }
 
+/* Title Effect */
+
 .title{
-  font-size:20px;
-  background:linear-gradient(90deg,#ff0000,#fff,#ff0000);
+  font-size:22px;
+  font-weight:700;
+
+  background:linear-gradient(
+    90deg,
+    #ff0000,
+    #ffffff,
+    #ff0000
+  );
+
   background-size:200%;
   -webkit-background-clip:text;
   color:transparent;
-  animation:title 3s linear infinite;
+
+  animation:titleMove 4s linear infinite;
+
+  text-shadow:
+    0 0 15px rgba(255,0,0,.6),
+    0 0 25px rgba(255,255,255,.4);
 }
 
-@keyframes title{
+@keyframes titleMove{
   from{background-position:0%}
   to{background-position:200%}
 }
@@ -108,6 +126,7 @@ th{
   font-size:12px;
   color:#aaa;
   padding:8px;
+  background:#050505;
 }
 
 td{
@@ -116,7 +135,7 @@ td{
 }
 
 tr{
-  background:#0d0d0d;
+  background:#0b0b0b;
   border:1px solid #333;
 }
 
@@ -136,12 +155,12 @@ tr:hover{
 
 .status{
   font-size:16px;
-  animation:blink 1s infinite;
+  animation:blink 1.5s infinite;
 }
 
 @keyframes blink{
   0%{opacity:1}
-  50%{opacity:.4}
+  50%{opacity:.5}
   100%{opacity:1}
 }
 
@@ -174,11 +193,16 @@ footer{
 
 <body>
 
-<div id="fx" class="effect"></div>
+<div id="bg" class="effect1"></div>
 
 <header>
+
+  <!-- LOGO -->
   <img src="https://cdn.discordapp.com/attachments/1469089205840904427/1469146767705767949/9792cd65875edf6333f3a32eb216040b.jpg">
+
+  <!-- TITLE -->
   <div class="title">Swift Hub Key Control</div>
+
 </header>
 
 <div class="container">
@@ -202,24 +226,28 @@ footer{
 </div>
 
 <footer>
-Swift Hub © 2026
+Swift Hub © 2026 • Secure System
 </footer>
 
 <script>
 
-/* ===== Background Effect Switch ===== */
+/* ================= Background Switch ================= */
 
-const effects=["lightning","rain","bw"];
+const effects=["effect1","effect2","effect3"];
 let idx=0;
 
 setInterval(()=>{
-  const fx=document.getElementById("fx");
-  fx.className="effect "+effects[idx];
+
+  const bg=document.getElementById("bg");
+
+  bg.className=effects[idx];
+
   idx=(idx+1)%effects.length;
-},3000);
+
+},10000);
 
 
-/* ===== Time Format ===== */
+/* ================= Time Format ================= */
 
 function format(ms){
 
@@ -235,7 +263,7 @@ function format(ms){
 }
 
 
-/* ===== Load Data ===== */
+/* ================= Load Data ================= */
 
 async function load(){
 
@@ -276,7 +304,7 @@ async function load(){
 
         <td>${k.user||"—"}</td>
 
-        <td>${k.key.slice(0,22)}...</td>
+        <td>${k.key.slice(0,24)}...</td>
 
         <td class="status ${cls}">${st}</td>
 
