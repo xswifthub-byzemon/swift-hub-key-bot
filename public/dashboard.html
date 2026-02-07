@@ -2,19 +2,16 @@
 <html lang="en">
 <head>
 
-<!-- FORCE UTF-8 -->
 <meta charset="UTF-8">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-
-<title>Swift Hub Control</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Swift Hub Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Anton&display=swap" rel="stylesheet">
 
 <style>
 
-/* ================= GLOBAL ================= */
+/* ============ GLOBAL ============ */
 
 *{
   box-sizing:border-box;
@@ -27,33 +24,15 @@ body{
   color:#fff;
 }
 
-/* ================= EMOJI GLOW ================= */
-
-.emoji{
-  display:inline-block;
-  animation:emojiGlow 1.2s infinite alternate;
-}
-
-@keyframes emojiGlow{
-  0%{
-    text-shadow:0 0 5px #fff;
-    transform:scale(1);
-  }
-  100%{
-    text-shadow:0 0 20px #00ffff,0 0 35px #ff00ff;
-    transform:scale(1.15);
-  }
-}
-
-/* ================= BG ================= */
+/* ============ BG ============ */
 
 #bg{
   position:fixed;
   inset:0;
   z-index:-1;
-  opacity:.12;
+  opacity:.15;
   background:linear-gradient(180deg,#111,#000,#111);
-  animation:bgmove 14s linear infinite;
+  animation:bgmove 15s linear infinite;
 }
 
 @keyframes bgmove{
@@ -61,20 +40,18 @@ body{
   to{background-position:200%}
 }
 
-/* ================= HEADER ================= */
+/* ============ HEADER ============ */
 
 header{
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
+  padding:14px;
   position:relative;
 
-  padding:14px;
   background:#000;
   border-bottom:3px solid #fff;
 }
-
-/* MENU */
 
 .menu,.back{
   position:absolute;
@@ -87,14 +64,12 @@ header{
 
 .back{display:none}
 
-/* ================= TITLE ================= */
-
 .title{
   font-family:"Anton",sans-serif;
   font-size:24px;
   letter-spacing:3px;
 
-  background:linear-gradient(90deg,#ff0000,#fff,#ff0000);
+  background:linear-gradient(90deg,#ff0040,#fff,#ff0040);
   background-size:300%;
 
   -webkit-background-clip:text;
@@ -102,9 +77,7 @@ header{
 
   animation:titleFlow 4s linear infinite;
 
-  text-shadow:
-    0 0 12px #fff,
-    0 0 25px #000;
+  text-shadow:0 0 15px #fff;
 }
 
 @keyframes titleFlow{
@@ -112,7 +85,7 @@ header{
   to{background-position:300%}
 }
 
-/* ================= PANEL ================= */
+/* ============ PANEL ============ */
 
 #panel{
   position:fixed;
@@ -124,26 +97,26 @@ header{
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  gap:20px;
+  gap:18px;
 }
 
 .panel-btn{
-  padding:12px 25px;
+  padding:12px 30px;
+  font-size:18px;
   border:2px solid #fff;
   background:#000;
   color:#fff;
-  font-size:18px;
   cursor:pointer;
 
-  animation:panelBlink 1s infinite alternate;
+  animation:blink 1s infinite alternate;
 }
 
-@keyframes panelBlink{
-  0%{box-shadow:0 0 5px #fff}
-  100%{box-shadow:0 0 20px #00ffff}
+@keyframes blink{
+  from{box-shadow:0 0 5px #fff}
+  to{box-shadow:0 0 20px #00ffff}
 }
 
-/* ================= STATS ================= */
+/* ============ STATS ============ */
 
 .stats{
   display:grid;
@@ -158,12 +131,12 @@ header{
   padding:8px;
   text-align:center;
 
-  animation:boxBlink 1.3s infinite alternate;
+  animation:boxBlink 1.4s infinite alternate;
 }
 
 @keyframes boxBlink{
-  0%{box-shadow:0 0 5px #fff}
-  100%{box-shadow:0 0 18px #00ffff}
+  from{box-shadow:0 0 5px #fff}
+  to{box-shadow:0 0 15px #00ffff}
 }
 
 .stat span{
@@ -171,10 +144,10 @@ header{
   font-weight:700;
 }
 
-/* ================= TABLE ================= */
+/* ============ TABLE ============ */
 
 .container{
-  padding:6px;
+  padding:8px;
 }
 
 table{
@@ -182,52 +155,53 @@ table{
   border-collapse:collapse;
 }
 
-th{
-  background:#000;
-  padding:6px;
-  font-size:12px;
+th,td{
   border:1px solid #fff;
-}
-
-td{
   padding:6px;
   font-size:12px;
   text-align:center;
-  border:1px solid #fff;
+}
+
+th{
+  background:#000;
+}
+
+td{
   word-break:break-all;
 }
 
-/* ================= STATUS ================= */
+/* ============ STATUS ============ */
 
 .status{
-  font-size:20px;
+  font-size:18px;
 }
 
 .free{
   color:#00ff88;
-  animation:blink 1s infinite;
-  text-shadow:0 0 12px #00ff88;
+  text-shadow:0 0 10px #00ff88;
 }
 
 .using{
   color:#ffe600;
-  animation:blink 1s infinite;
-  text-shadow:0 0 12px #ffe600;
+  text-shadow:0 0 10px #ffe600;
 }
 
 .expired{
   color:#ff3333;
-  animation:blink 1s infinite;
-  text-shadow:0 0 12px #ff3333;
+  text-shadow:0 0 10px #ff3333;
 }
 
-@keyframes blink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
+/* ============ PAGES ============ */
+
+.page{
+  display:none;
 }
 
-/* ================= FOOTER ================= */
+.page.active{
+  display:block;
+}
+
+/* ============ FOOTER ============ */
 
 footer{
   text-align:center;
@@ -247,87 +221,100 @@ footer{
 
 <div id="panel">
 
-  <div class="panel-btn" onclick="openChart()">
-    <span class="emoji">📊</span> Statistics
-  </div>
+  <div class="panel-btn" onclick="openHome()">🏠 Free Keys</div>
 
-  <div class="panel-btn" onclick="closePanel()">
-    <span class="emoji">❌</span> Close
-  </div>
+  <div class="panel-btn" onclick="openTest()">🧪 Test Keys</div>
+
+  <div class="panel-btn" onclick="openStats()">📊 Statistics</div>
+
+  <div class="panel-btn" onclick="closePanel()">❌ Close</div>
 
 </div>
+
+<!-- HEADER -->
 
 <header>
 
-  <div class="menu" id="menuBtn" onclick="openPanel()">
-    <span class="emoji">☰</span>
-  </div>
+  <div class="menu" id="menuBtn" onclick="openPanel()">☰</div>
 
-  <div class="back" id="backBtn" onclick="backHome()">
-    <span class="emoji">⬅️</span>
-  </div>
+  <div class="back" id="backBtn" onclick="goBack()">⬅</div>
 
-  <div class="title">
-    SWIFT HUB • KEY CONTROL
-  </div>
+  <div class="title">SWIFT HUB DASHBOARD</div>
 
 </header>
 
-<!-- MAIN -->
+<!-- HOME (FREE) -->
 
-<div id="mainPage">
+<div id="homePage" class="page active">
 
-<div class="stats">
+  <div class="stats">
 
-  <div class="stat">Total<br><span id="total">0</span></div>
-  <div class="stat">Free<br><span id="free">0</span></div>
-  <div class="stat">Used<br><span id="used">0</span></div>
+    <div class="stat">Total<br><span id="total">0</span></div>
+    <div class="stat">Free<br><span id="free">0</span></div>
+    <div class="stat">Used<br><span id="used">0</span></div>
 
-</div>
+  </div>
 
-<div class="container">
+  <div class="container">
 
-<table>
+    <table>
 
-<thead>
-<tr>
-  <th>#</th>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Key</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
 
-  <th>
-    <span class="emoji">👤</span> User
-  </th>
+      <tbody id="freeData"></tbody>
 
-  <th>
-    <span class="emoji">🔑</span> Key
-  </th>
+    </table>
 
-  <th>
-    <span class="emoji">🚦</span> Status
-  </th>
-
-  <th>
-    <span class="emoji">⏱️</span> Time
-  </th>
-</tr>
-</thead>
-
-<tbody id="data"></tbody>
-
-</table>
+  </div>
 
 </div>
 
+<!-- TEST PAGE -->
+
+<div id="testPage" class="page">
+
+  <div class="container">
+
+    <h3>🧪 Test Keys</h3>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Key</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+
+      <tbody id="testData"></tbody>
+
+    </table>
+
+  </div>
+
 </div>
 
-<!-- CHART -->
+<!-- STATS PAGE -->
 
-<div id="chartPage" style="display:none;text-align:center;padding:12px">
+<div id="statsPage" class="page">
 
-<h3>
-  <span class="emoji">📊</span> Monthly Usage
-</h3>
+  <div class="container">
 
-<canvas id="chart"></canvas>
+    <h3>📊 Statistics</h3>
+
+    <p id="statsText"></p>
+
+  </div>
 
 </div>
 
@@ -337,36 +324,71 @@ Swift Hub © 2026
 
 <script>
 
-/* ================= PANEL ================= */
+/* ============ PANEL ============ */
 
-function openPanel(){ panel.style.display="flex"; }
-function closePanel(){ panel.style.display="none"; }
+function openPanel(){
+  panel.style.display="flex";
+}
 
-function openChart(){
-
+function closePanel(){
   panel.style.display="none";
-
-  mainPage.style.display="none";
-  chartPage.style.display="block";
-
-  menuBtn.style.display="none";
-  backBtn.style.display="block";
 }
 
-function backHome(){
+/* ============ PAGE SWITCH ============ */
 
-  chartPage.style.display="none";
-  mainPage.style.display="block";
+function hideAll(){
 
-  menuBtn.style.display="block";
+  document
+    .querySelectorAll(".page")
+    .forEach(p=>p.classList.remove("active"));
+
+}
+
+function openHome(){
+
+  hideAll();
+
+  homePage.classList.add("active");
+
   backBtn.style.display="none";
+  menuBtn.style.display="block";
+
+  closePanel();
 }
 
-/* ================= TIME ================= */
+function openTest(){
+
+  hideAll();
+
+  testPage.classList.add("active");
+
+  backBtn.style.display="block";
+  menuBtn.style.display="none";
+
+  closePanel();
+}
+
+function openStats(){
+
+  hideAll();
+
+  statsPage.classList.add("active");
+
+  backBtn.style.display="block";
+  menuBtn.style.display="none";
+
+  closePanel();
+}
+
+function goBack(){
+  openHome();
+}
+
+/* ============ TIME ============ */
 
 function format(ms){
 
-  if(ms<=0) return "00:00:00";
+  if(!ms || ms<=0) return "00:00:00";
 
   let s=Math.floor(ms/1000);
 
@@ -379,9 +401,7 @@ function format(ms){
     .toString().padStart(2,"0")}`;
 }
 
-/* ================= DATA ================= */
-
-let cacheData=[];
+/* ============ DATA ============ */
 
 async function load(){
 
@@ -390,67 +410,104 @@ async function load(){
     const res=await fetch("/api/dashboard");
     const data=await res.json();
 
-    cacheData=data;
+    let freeHTML="";
+    let testHTML="";
 
-    let html="";
-
-    let total=data.length;
-    let free=0;
-    let used=0;
+    let total=0,free=0,used=0;
 
     data.forEach((k,i)=>{
 
-      let st="",cls="",time="";
+      let cls="",st="",time="";
 
       if(!k.used){
 
-        st="🟢";
         cls="free";
+        st="🟢";
         time="FREE";
         free++;
 
       }else if(k.left>0){
 
-        st="🟡";
         cls="using";
+        st="🟡";
         time=format(k.left);
         used++;
 
       }else{
 
-        st="🔴";
         cls="expired";
+        st="🔴";
         time="EXPIRED";
         used++;
       }
 
-      html+=`
-      <tr>
-        <td>${i+1}</td>
-        <td>${k.user||"—"}</td>
-        <td>${k.key?.slice(0,24)}...</td>
-        <td class="status ${cls}">${st}</td>
-        <td>${time}</td>
-      </tr>`;
+      total++;
+
+      /* FREE PAGE */
+
+      if(k.type==="free"){
+
+        freeHTML+=`
+        <tr>
+          <td>${free+used}</td>
+          <td>${k.user||"-"}</td>
+          <td>${k.key}</td>
+          <td class="status ${cls}">${st}</td>
+          <td>${time}</td>
+        </tr>
+        `;
+      }
+
+      /* TEST PAGE */
+
+      if(k.type==="test"){
+
+        testHTML+=`
+        <tr>
+          <td>${i+1}</td>
+          <td>${k.key}</td>
+          <td class="status ${cls}">${st}</td>
+          <td>${time}</td>
+        </tr>
+        `;
+      }
+
     });
 
-    dataEl.innerHTML=html;
+    freeData.innerHTML=freeHTML;
+    testData.innerHTML=testHTML;
 
     totalEl.textContent=total;
     freeEl.textContent=free;
     usedEl.textContent=used;
+
+    statsText.textContent=
+      `Total: ${total} | Free: ${free} | Used: ${used}`;
 
   }catch(e){
     console.log(e);
   }
 }
 
-const dataEl=document.getElementById("data");
+/* ============ INIT ============ */
+
+const panel=document.getElementById("panel");
+
+const homePage=document.getElementById("homePage");
+const testPage=document.getElementById("testPage");
+const statsPage=document.getElementById("statsPage");
+
+const menuBtn=document.getElementById("menuBtn");
+const backBtn=document.getElementById("backBtn");
+
+const freeData=document.getElementById("freeData");
+const testData=document.getElementById("testData");
+
 const totalEl=document.getElementById("total");
 const freeEl=document.getElementById("free");
 const usedEl=document.getElementById("used");
 
-/* ================= START ================= */
+const statsText=document.getElementById("statsText");
 
 load();
 setInterval(load,2000);
