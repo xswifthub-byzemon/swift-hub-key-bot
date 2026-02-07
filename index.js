@@ -75,6 +75,7 @@ function saveDB(data) {
 function randomString(len = 10) {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&!*";
+
   let out = "";
 
   for (let i = 0; i < len; i++) {
@@ -84,7 +85,7 @@ function randomString(len = 10) {
   return out;
 }
 
-// ยาวขึ้น
+// Key ยาวขึ้น
 function generateRealKey() {
   return `SwiftHub-${randomString(8)}-${randomString(8)}-${randomString(6)}`;
 }
@@ -93,11 +94,24 @@ function generateTempKey(uid) {
   return `${uid}-swifthub-${randomString(12)}`;
 }
 
+// แบ่งข้อความไม่เกิน 1900 ตัว
+function splitMessage(text, size = 1900) {
+
+  let chunks = [];
+
+  for (let i = 0; i < text.length; i += size) {
+    chunks.push(text.slice(i, i + size));
+  }
+
+  return chunks;
+}
+
 // ================================
 // Slash Commands
 // ================================
 
 const commands = [
+
   new SlashCommandBuilder()
     .setName("panel")
     .setDescription("Open Swift Hub Panel"),
@@ -105,13 +119,20 @@ const commands = [
   new SlashCommandBuilder()
     .setName("createkeybulk")
     .setDescription("Create 50 Keys (Owner)")
+
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(TOKEN);
 
 (async () => {
-  await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
+
+  await rest.put(
+    Routes.applicationCommands(CLIENT_ID),
+    { body: commands }
+  );
+
   console.log("✅ Commands Loaded");
+
 })();
 
 // ================================
@@ -127,10 +148,13 @@ client.once("ready", () => {
 // ================================
 
 function userHasActiveKey(db, uid) {
+
   const now = Date.now();
 
   return db.find(
-    k => k.user === uid && k.redeemed && k.expire > now
+    k => k.user === uid &&
+    k.redeemed &&
+    k.expire > now
   );
 }
 
@@ -148,7 +172,9 @@ client.on(Events.InteractionCreate, async interaction => {
     if (interaction.commandName === "panel") {
 
       const embed = new EmbedBuilder()
+
         .setTitle("🚀 Swift Hub | Key System")
+
         .setDescription(`
 🔹 HOW TO USE
 1. Get Key
@@ -162,6 +188,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 ⚠️ 1 คนใช้ได้ 1 คีย์ ต่อรอบ
 `)
+
         .setColor(0xff3366);
 
       const row = new ActionRowBuilder().addComponents(
@@ -185,6 +212,7 @@ client.on(Events.InteractionCreate, async interaction => {
           .setCustomId("reset")
           .setLabel("♻ Reset HWID")
           .setStyle(ButtonStyle.Danger)
+
       );
 
       return interaction.reply({
@@ -193,7 +221,7 @@ client.on(Events.InteractionCreate, async interaction => {
       });
     }
 
-    // CREATE KEY BULK (Dropdown)
+    // CREATE BULK
     if (interaction.commandName === "createkeybulk") {
 
       if (interaction.user.id !== OWNER_ID)
@@ -203,29 +231,16 @@ client.on(Events.InteractionCreate, async interaction => {
         });
 
       const menu = new StringSelectMenuBuilder()
+
         .setCustomId("select_time")
+
         .setPlaceholder("Select Key Duration")
+
         .addOptions([
-          {
-            label: "6 Hours",
-            value: "6",
-            description: "6hr Key"
-          },
-          {
-            label: "12 Hours",
-            value: "12",
-            description: "12hr Key"
-          },
-          {
-            label: "24 Hours",
-            value: "24",
-            description: "24hr Key"
-          },
-          {
-            label: "Random",
-            value: "random",
-            description: "Random 6 / 12 / 24"
-          }
+          { label: "6 Hours", value: "6" },
+          { label: "12 Hours", value: "12" },
+          { label: "24 Hours", value: "24" },
+          { label: "Random", value: "random" }
         ]);
 
       const row = new ActionRowBuilder().addComponents(menu);
@@ -243,6 +258,8 @@ client.on(Events.InteractionCreate, async interaction => {
   if (interaction.isStringSelectMenu()) {
 
     if (interaction.customId === "select_time") {
+
+      await interaction.deferUpdate(); // กัน interaction timeout
 
       let db = loadDB();
       let list = [];
@@ -263,6 +280,7 @@ client.on(Events.InteractionCreate, async interaction => {
         let k = generateRealKey();
 
         db.push({
+
           key: k,
           tempKey: null,
 
@@ -278,6 +296,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
           ip: null,
           hwid: null
+
         });
 
         list.push(`${k} (${h}h)`);
@@ -285,10 +304,27 @@ client.on(Events.InteractionCreate, async interaction => {
 
       saveDB(db);
 
-      return interaction.update({
-        content: "✅ Keys Created\n```" + list.join("\n") + "```",
+      let fullText =
+        "✅ Keys Created\n```" +
+        list.join("\n") +
+        "```";
+
+      let chunks = splitMessage(fullText);
+
+      // ลบ dropdown เดิม
+      await interaction.editReply({
+        content: "✅ Keys Generated (Sending...)",
         components: []
       });
+
+      // ส่งทีละก้อน
+      for (let msg of chunks) {
+
+        await interaction.followUp({
+          content: msg,
+          ephemeral: true
+        });
+      }
     }
   }
 
@@ -312,6 +348,7 @@ client.on(Events.InteractionCreate, async interaction => {
       let temp = generateTempKey(uid);
 
       db.push({
+
         key: null,
         tempKey: temp,
 
@@ -327,6 +364,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
         ip: null,
         hwid: null
+
       });
 
       saveDB(db);
@@ -338,16 +376,16 @@ client.on(Events.InteractionCreate, async interaction => {
 👤 User ID: \`${uid}\`
 📌 Temp Key: \`${temp}\`
 
-➡️ Please redeem this key first to get your real key.
+➡️ Please redeem this key first.
 
 ━━━━━━━━━━━━━━
 
-🔑 **สร้างคีย์ชั่วคราวแล้ว!**
+🔑 **สร้างคีย์ชั่วคราวแล้ว**
 
-👤 ไอดีผู้ใช้: \`${uid}\`
-📌 Temp Key: \`${temp}\`
+👤 UID: \`${uid}\`
+📌 คีย์: \`${temp}\`
 
-➡️ ให้นำคีย์นี้ไป Redeem ก่อน เพื่อรับคีย์จริงนะคะ 💖
+➡️ เอาไป Redeem ก่อนนะคะ 💖
 `,
         ephemeral: true
       });
@@ -367,22 +405,22 @@ client.on(Events.InteractionCreate, async interaction => {
       let left = Math.floor((d.expire - Date.now()) / 1000);
 
       let h = Math.floor(left / 3600);
-      let m = Math.floor((left % 3600) / 60);
+      let m = Math.floor(left % 3600 / 60);
       let s = left % 60;
 
       return interaction.reply({
         content: `
-📊 **Your Key Status**
+📊 Key Status
 
-⏳ Time Left: ${h}h ${m}m ${s}s
-🔑 Status: Active
+⏳ ${h}h ${m}m ${s}s
+✅ Active
 
 ━━━━━━━━━━━━━━
 
-📊 **สถานะคีย์ของคุณ**
+📊 สถานะคีย์
 
-⏳ เวลาที่เหลือ: ${h}ชม ${m}นาที ${s}วิ
-🔑 สถานะ: ใช้งานได้ 💚
+⏳ ${h}ชม ${m}นาที ${s}วิ
+✅ ใช้งานได้ 💚
 `,
         ephemeral: true
       });
@@ -478,19 +516,17 @@ client.on(Events.InteractionCreate, async interaction => {
 
       return interaction.reply({
         content: `
-🎉 **Redeem Successful!**
+🎉 Redeem Success!
 
-✅ Your key is now active!
-🔑 Real Key: \`${real.key}\`
-🚀 You can use it right now.
+🔑 ${real.key}
+✅ Ready to use
 
 ━━━━━━━━━━━━━━
 
-🎉 **แลกรหัสสำเร็จแล้ว!**
+🎉 แลกสำเร็จ!
 
-✅ คีย์พร้อมใช้งานแล้ว
-🔑 คีย์จริง: \`${real.key}\`
-🚀 นำไปใช้งานได้ทันทีเลยค่ะ 💖
+🔑 ${real.key}
+✅ ใช้งานได้แล้ว 💖
 `,
         ephemeral: true
       });
@@ -502,7 +538,8 @@ client.on(Events.InteractionCreate, async interaction => {
       let key = interaction.fields.getTextInputValue("rkey");
 
       let data = db.find(
-        k => k.key === key && k.user === interaction.user.id
+        k => k.key === key &&
+        k.user === interaction.user.id
       );
 
       if (!data)
@@ -555,7 +592,10 @@ app.get("/verify", (req, res) => {
   });
 });
 
+// ================================
 // Dashboard
+// ================================
+
 app.get("/api/dashboard", (req, res) => {
 
   const db = loadDB();
@@ -572,7 +612,9 @@ app.get("/api/dashboard", (req, res) => {
 
     used: k.redeemed,
 
-    left: k.expire ? Math.max(0, k.expire - now) : null
+    left: k.expire
+      ? Math.max(0, k.expire - now)
+      : null
 
   })));
 });
