@@ -10,6 +10,8 @@
 
 <style>
 
+/* ===== BASE ===== */
+
 *{
   box-sizing:border-box;
   font-family:"Orbitron",sans-serif;
@@ -21,7 +23,7 @@ body{
   color:#fff;
 }
 
-/* ================= BG ================= */
+/* ===== BG ===== */
 
 #bg{
   position:fixed;
@@ -37,20 +39,17 @@ body{
   to{background-position:200%}
 }
 
-/* ================= Header ================= */
+/* ===== HEADER ===== */
 
 header{
   display:flex;
   align-items:center;
   justify-content:center;
   position:relative;
-
   padding:14px;
   background:#000;
   border-bottom:3px solid #fff;
 }
-
-/* Menu */
 
 .menu,.back{
   position:absolute;
@@ -63,24 +62,18 @@ header{
 
 .back{display:none}
 
-/* ================= Title ================= */
+/* ===== TITLE ===== */
 
 .title{
   font-family:"Anton",sans-serif;
   font-size:24px;
   letter-spacing:3px;
-
   background:linear-gradient(90deg,#ff0000,#fff,#ff0000);
   background-size:300%;
-
   -webkit-background-clip:text;
   color:transparent;
-
   animation:titleFlow 4s linear infinite;
-
-  text-shadow:
-    0 0 12px #fff,
-    0 0 25px #000;
+  text-shadow:0 0 12px #fff,0 0 25px #000;
 }
 
 @keyframes titleFlow{
@@ -88,7 +81,7 @@ header{
   to{background-position:300%}
 }
 
-/* ================= Menu Panel ================= */
+/* ===== PANEL ===== */
 
 #panel{
   position:fixed;
@@ -96,7 +89,6 @@ header{
   background:rgba(0,0,0,.95);
   display:none;
   z-index:99;
-
   flex-direction:column;
   justify-content:center;
   align-items:center;
@@ -110,7 +102,6 @@ header{
   color:#fff;
   font-size:18px;
   cursor:pointer;
-
   animation:panelBlink 1s infinite alternate;
 }
 
@@ -119,7 +110,7 @@ header{
   100%{box-shadow:0 0 18px #fff}
 }
 
-/* ================= Stats ================= */
+/* ===== STATS ===== */
 
 .stats{
   display:grid;
@@ -133,7 +124,6 @@ header{
   border:2px solid #fff;
   padding:8px;
   text-align:center;
-
   animation:boxBlink 1.3s infinite alternate;
 }
 
@@ -147,18 +137,14 @@ header{
   font-weight:700;
 }
 
-/* ================= Table ================= */
+/* ===== TABLE ===== */
 
-.container{
-  padding:6px;
-}
+.container{padding:6px}
 
 table{
   width:100%;
   border-collapse:collapse;
 }
-
-/* Header */
 
 th{
   background:#000;
@@ -166,8 +152,6 @@ th{
   font-size:12px;
   border:1px solid #fff;
 }
-
-/* Emoji Glow */
 
 th span{
   animation:emojiBlink 1.2s infinite;
@@ -179,8 +163,6 @@ th span{
   100%{text-shadow:0 0 5px #fff}
 }
 
-/* Cell */
-
 td{
   padding:6px;
   font-size:12px;
@@ -189,13 +171,23 @@ td{
   word-break:break-all;
 }
 
-/* ================= Status ================= */
+/* ===== COPY ===== */
 
-.status{
-  font-size:20px;
+.copyBtn{
+  cursor:pointer;
+  margin-left:4px;
+  font-size:14px;
+  animation:copyGlow 1s infinite alternate;
 }
 
-/* Blink by color */
+@keyframes copyGlow{
+  from{text-shadow:0 0 5px #0f0}
+  to{text-shadow:0 0 15px #0f0}
+}
+
+/* ===== STATUS ===== */
+
+.status{font-size:20px}
 
 .free{
   color:#00ff88;
@@ -215,27 +207,9 @@ td{
   text-shadow:0 0 12px #ff3333;
 }
 
-@keyframes greenBlink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
-}
+/* ===== CHART ===== */
 
-@keyframes yellowBlink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
-}
-
-@keyframes redBlink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
-}
-
-/* ================= Chart ================= */
-
-#chartPage{
+#chartPage,#testPage{
   display:none;
   padding:12px;
   text-align:center;
@@ -249,7 +223,7 @@ canvas{
   border:2px solid #fff;
 }
 
-/* ================= Footer ================= */
+/* ===== FOOTER ===== */
 
 footer{
   text-align:center;
@@ -265,11 +239,14 @@ footer{
 
 <div id="bg"></div>
 
-<!-- MENU PANEL -->
+<!-- PANEL -->
 
 <div id="panel">
+
   <div class="panel-btn" onclick="openChart()">📊 Statistics</div>
+  <div class="panel-btn" onclick="openTest()">🧪 Key Test</div>
   <div class="panel-btn" onclick="closePanel()">❌ Close</div>
+
 </div>
 
 <header>
@@ -281,7 +258,7 @@ footer{
 
 </header>
 
-<!-- MAIN PAGE -->
+<!-- HOME -->
 
 <div id="mainPage">
 
@@ -315,7 +292,7 @@ footer{
 
 </div>
 
-<!-- CHART PAGE -->
+<!-- CHART -->
 
 <div id="chartPage">
 
@@ -325,22 +302,53 @@ footer{
 
 </div>
 
+<!-- TEST -->
+
+<div id="testPage">
+
+<h3>🧪 Key Test</h3>
+
+<div class="container">
+
+<table>
+
+<thead>
+<tr>
+  <th>#</th>
+  <th>Name</th>
+  <th>Key</th>
+  <th>📋</th>
+  <th>Status</th>
+</tr>
+</thead>
+
+<tbody id="testData"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
 <footer>
 Swift Hub © 2026
 </footer>
 
 <script>
 
-/* ================= Panel ================= */
+/* ===== PANEL ===== */
 
 function openPanel(){ panel.style.display="flex"; }
 function closePanel(){ panel.style.display="none"; }
 
+/* ===== NAV ===== */
+
 function openChart(){
 
-  panel.style.display="none";
+  closePanel();
 
   mainPage.style.display="none";
+  testPage.style.display="none";
   chartPage.style.display="block";
 
   menuBtn.style.display="none";
@@ -349,16 +357,29 @@ function openChart(){
   drawChart();
 }
 
+function openTest(){
+
+  closePanel();
+
+  mainPage.style.display="none";
+  chartPage.style.display="none";
+  testPage.style.display="block";
+
+  menuBtn.style.display="none";
+  backBtn.style.display="block";
+}
+
 function backHome(){
 
   chartPage.style.display="none";
+  testPage.style.display="none";
   mainPage.style.display="block";
 
   menuBtn.style.display="block";
   backBtn.style.display="none";
 }
 
-/* ================= Time ================= */
+/* ===== TIME ===== */
 
 function format(ms){
 
@@ -373,78 +394,98 @@ function format(ms){
   return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${se.toString().padStart(2,"0")}`;
 }
 
-/* ================= Data ================= */
+/* ===== COPY ===== */
+
+function copyKey(t){
+
+  navigator.clipboard.writeText(t);
+  alert("✅ Copied!");
+}
+
+/* ===== DATA ===== */
 
 let cacheData=[];
 
 async function load(){
 
-  try{
+  const res=await fetch("/api/dashboard");
+  const data=await res.json();
 
-    const res=await fetch("/api/dashboard");
-    const data=await res.json();
+  cacheData=data;
 
-    cacheData=data;
+  let html="";
+  let testHtml="";
 
-    let html="";
+  let total=data.length;
+  let free=0;
+  let used=0;
 
-    let total=data.length;
-    let free=0;
-    let used=0;
+  data.forEach((k,i)=>{
 
-    data.forEach((k,i)=>{
+    let st="",cls="",time="";
 
-      let st="",cls="",time="";
+    if(!k.used){
 
-      if(!k.used){
+      st="🟢";
+      cls="free";
+      time="06:00:00";
+      free++;
 
-        st="🟢";
-        cls="free";
-        time="06:00:00";
-        free++;
+    }else if(k.left>0){
 
-      }else if(k.left>0){
+      st="🟡";
+      cls="using";
+      time=format(k.left);
+      used++;
 
-        st="🟡";
-        cls="using";
-        time=format(k.left);
-        used++;
+    }else{
 
-      }else{
+      st="🔴";
+      cls="expired";
+      time="EXPIRED";
+      used++;
+    }
 
-        st="🔴";
-        cls="expired";
-        time="EXPIRED";
-        used++;
-      }
+    if(k.type!=="test"){
 
       html+=`
       <tr>
         <td>${i+1}</td>
         <td>${k.user||"—"}</td>
-        <td>${k.key.slice(0,24)}...</td>
+        <td>
+          ${k.key.slice(0,24)}...
+          <span class="copyBtn" onclick="copyKey('${k.key}')">📋</span>
+        </td>
         <td class="status ${cls}">${st}</td>
         <td>${time}</td>
       </tr>`;
-    });
+    }
 
-    dataEl.innerHTML=html;
+    if(k.type==="test"){
 
-    totalEl.textContent=total;
-    freeEl.textContent=free;
-    usedEl.textContent=used;
+      testHtml+=`
+      <tr>
+        <td>${i+1}</td>
+        <td>${k.name||"-"}</td>
+        <td>
+          ${k.key}
+          <span class="copyBtn" onclick="copyKey('${k.key}')">📋</span>
+        </td>
+        <td>${st}</td>
+      </tr>`;
+    }
 
-  }catch(e){
-    console.log(e);
-  }
+  });
+
+  dataEl.innerHTML=html;
+  testData.innerHTML=testHtml;
+
+  totalEl.textContent=total;
+  freeEl.textContent=free;
+  usedEl.textContent=used;
 }
 
-const dataEl=document.getElementById("data");
-const totalEl=document.getElementById("total");
-const freeEl=document.getElementById("free");
-const usedEl=document.getElementById("used");
-
-/* ================= Chart ================= */
+/* ===== CHART ===== */
 
 function drawChart(){
 
@@ -475,8 +516,6 @@ function drawChart(){
     values.push(v);
   }
 
-  /* Grid */
-
   ctx.strokeStyle="#333";
 
   for(let i=0;i<=5;i++){
@@ -491,8 +530,6 @@ function drawChart(){
     ctx.fillStyle="#aaa";
     ctx.fillText((100-i*20)+"%",5,y+5);
   }
-
-  /* Line */
 
   let color= percent>50 ? "#00ff88" : "#ff3333";
 
@@ -515,8 +552,6 @@ function drawChart(){
 
   ctx.stroke();
 
-  /* Points */
-
   values.forEach((v,i)=>{
 
     let x=40+i*(440/11);
@@ -529,8 +564,6 @@ function drawChart(){
     ctx.fill();
   });
 
-  /* Months */
-
   ctx.fillStyle="#fff";
 
   months.forEach((m,i)=>{
@@ -541,7 +574,7 @@ function drawChart(){
   });
 }
 
-/* ================= Start ================= */
+/* ===== START ===== */
 
 load();
 setInterval(load,2000);
