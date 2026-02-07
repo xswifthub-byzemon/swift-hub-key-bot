@@ -42,9 +42,32 @@ body{
 
 header{
   text-align:center;
-  padding:20px 10px;
+  padding:18px 10px;
   background:#000;
   border-bottom:3px solid #fff;
+  position:relative;
+}
+
+/* Menu */
+
+.menu{
+  position:absolute;
+  left:15px;
+  top:15px;
+  font-size:26px;
+  cursor:pointer;
+  user-select:none;
+}
+
+/* Back */
+
+.back{
+  position:absolute;
+  left:15px;
+  top:15px;
+  font-size:26px;
+  cursor:pointer;
+  display:none;
 }
 
 /* ================= Title ================= */
@@ -69,43 +92,23 @@ header{
 
   text-shadow:
     0 0 15px #fff,
-    0 0 30px #000,
-    0 0 45px #000;
-}
-
-/* Aura */
-
-.title::after{
-  content:"";
-  position:absolute;
-  left:-100%;
-  top:0;
-  width:100%;
-  height:100%;
-
-  background:linear-gradient(
-    90deg,
-    transparent,
-    rgba(255,255,255,.7),
-    transparent
-  );
-
-  animation:auraFlow 2.5s linear infinite;
-}
-
-header{
-  position:relative;
-  overflow:hidden;
-}
-
-@keyframes auraFlow{
-  from{left:-100%}
-  to{left:100%}
+    0 0 30px #000;
 }
 
 @keyframes titleFlow{
   from{background-position:0%}
   to{background-position:300%}
+}
+
+/* ================= Sections ================= */
+
+#mainPage,
+#chartPage{
+  display:none;
+}
+
+#mainPage{
+  display:block;
 }
 
 /* ================= Stats ================= */
@@ -120,9 +123,7 @@ header{
 .stat{
   background:#050505;
   border:2px solid #fff;
-
   animation:boxBlink 1.2s infinite alternate;
-
   padding:10px;
   text-align:center;
   border-radius:6px;
@@ -131,12 +132,6 @@ header{
 @keyframes boxBlink{
   0%{box-shadow:0 0 5px #fff}
   100%{box-shadow:0 0 18px #fff}
-}
-
-.stat h3{
-  margin:2px 0;
-  font-size:13px;
-  color:#aaa;
 }
 
 .stat span{
@@ -152,66 +147,31 @@ header{
 
 table{
   width:100%;
-  border-collapse:separate;
   border-spacing:0 8px;
-  table-layout:fixed;
 }
 
 th,td{
   text-align:center;
 }
 
-/* Header */
-
 th{
-  font-size:13px;
-  color:#fff;
-  padding:8px;
-  background:#000;
   border-bottom:2px solid #fff;
+  padding:8px;
 }
-
-/* Emoji Glow */
-
-th span{
-  animation:emojiBlink 1.3s infinite;
-}
-
-@keyframes emojiBlink{
-  0%{text-shadow:0 0 5px #fff}
-  50%{text-shadow:0 0 20px #fff}
-  100%{text-shadow:0 0 5px #fff}
-}
-
-/* Cell */
 
 td{
   padding:10px 5px;
-  font-size:13px;
-  word-break:break-all;
 }
-
-/* Row */
 
 tr{
   background:#0b0b0b;
-
   border:3px solid #fff;
-
   animation:rowBlink 1s infinite alternate;
 }
 
 @keyframes rowBlink{
-  0%{
-    box-shadow:0 0 6px #fff;
-  }
-  100%{
-    box-shadow:0 0 20px #fff;
-  }
-}
-
-tr:hover{
-  background:#151515;
+  0%{box-shadow:0 0 6px #fff}
+  100%{box-shadow:0 0 20px #fff}
 }
 
 /* ================= Status ================= */
@@ -227,19 +187,24 @@ tr:hover{
   100%{opacity:1}
 }
 
-.free{
-  color:#00ff88;
-  text-shadow:0 0 12px #00ff88;
+.free{color:#00ff88}
+.using{color:#ffe600}
+.expired{color:#ff3333}
+
+/* ================= Chart ================= */
+
+.chartBox{
+  padding:20px;
+  text-align:center;
 }
 
-.using{
-  color:#ffe600;
-  text-shadow:0 0 12px #ffe600;
-}
-
-.expired{
-  color:#ff3333;
-  text-shadow:0 0 12px #ff3333;
+canvas{
+  width:100%;
+  max-width:600px;
+  height:300px;
+  background:#050505;
+  border:2px solid #fff;
+  box-shadow:0 0 20px #fff;
 }
 
 /* ================= Footer ================= */
@@ -260,26 +225,31 @@ footer{
 
 <header>
 
-  <div class="title">SWIFT HUB • KEY CONTROL</div>
+  <div class="menu" id="menuBtn">☰</div>
+  <div class="back" id="backBtn">⬅</div>
+
+  <div class="title" id="pageTitle">SWIFT HUB • KEY CONTROL</div>
 
 </header>
 
-<!-- STATS -->
+<!-- ================= MAIN PAGE ================= -->
+
+<div id="mainPage">
 
 <div class="stats">
 
   <div class="stat">
-    <h3>Total Keys</h3>
+    <h3>Total</h3>
     <span id="total">0</span>
   </div>
 
   <div class="stat">
-    <h3>Free Keys</h3>
+    <h3>Free</h3>
     <span id="free">0</span>
   </div>
 
   <div class="stat">
-    <h3>Used Keys</h3>
+    <h3>Used</h3>
     <span id="used">0</span>
   </div>
 
@@ -292,10 +262,10 @@ footer{
 <thead>
 <tr>
   <th>No.</th>
-  <th><span>👤</span> User</th>
-  <th><span>🔑</span> Key</th>
-  <th><span>🚦</span> Status</th>
-  <th><span>⏱</span> Time</th>
+  <th>👤 User</th>
+  <th>🔑 Key</th>
+  <th>🚦 Status</th>
+  <th>⏱ Time</th>
 </tr>
 </thead>
 
@@ -305,11 +275,59 @@ footer{
 
 </div>
 
+</div>
+
+<!-- ================= CHART PAGE ================= -->
+
+<div id="chartPage">
+
+<div class="chartBox">
+
+<h2>📊 Usage Statistics (%)</h2>
+
+<canvas id="chart"></canvas>
+
+</div>
+
+</div>
+
 <footer>
 Swift Hub © 2026 • Secure System
 </footer>
 
 <script>
+
+/* ================= Switch Page ================= */
+
+const main=document.getElementById("mainPage");
+const chart=document.getElementById("chartPage");
+const menu=document.getElementById("menuBtn");
+const back=document.getElementById("backBtn");
+const title=document.getElementById("pageTitle");
+
+menu.onclick=()=>{
+
+  main.style.display="none";
+  chart.style.display="block";
+
+  menu.style.display="none";
+  back.style.display="block";
+
+  title.textContent="STATISTICS DASHBOARD";
+
+  drawChart();
+};
+
+back.onclick=()=>{
+
+  chart.style.display="none";
+  main.style.display="block";
+
+  back.style.display="none";
+  menu.style.display="block";
+
+  title.textContent="SWIFT HUB • KEY CONTROL";
+};
 
 /* ================= Time ================= */
 
@@ -323,10 +341,12 @@ function format(ms){
   let m=Math.floor((s%3600)/60);
   let se=s%60;
 
-  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(se).padStart(2,"0")}`;
+  return `${h}:${m}:${se}`;
 }
 
 /* ================= Load ================= */
+
+let lastData=[];
 
 async function load(){
 
@@ -334,6 +354,8 @@ async function load(){
 
     const res=await fetch("/api/dashboard");
     const data=await res.json();
+
+    lastData=data;
 
     let html="";
 
@@ -369,17 +391,11 @@ async function load(){
 
       html+=`
       <tr>
-
         <td>${i+1}</td>
-
         <td>${k.user||"—"}</td>
-
         <td>${k.key.slice(0,26)}...</td>
-
         <td class="status ${cls}">${st}</td>
-
         <td>${time}</td>
-
       </tr>
       `;
     });
@@ -395,8 +411,67 @@ async function load(){
   }
 }
 
+/* ================= Chart ================= */
+
+function drawChart(){
+
+  const c=document.getElementById("chart");
+  const ctx=c.getContext("2d");
+
+  ctx.clearRect(0,0,c.width,c.height);
+
+  let months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  let values=new Array(12).fill(0);
+
+  lastData.forEach(k=>{
+
+    if(k.used && k.left>0){
+
+      let d=new Date();
+      let m=d.getMonth();
+
+      values[m]++;
+    }
+  });
+
+  let max=Math.max(...values,1);
+
+  let w=c.width=600;
+  let h=c.height=300;
+
+  ctx.strokeStyle="#fff";
+  ctx.beginPath();
+
+  values.forEach((v,i)=>{
+
+    let x=50+(i*45);
+    let y=h-40-(v/max*200);
+
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+
+    let percent=Math.floor((v/max)*100);
+
+    ctx.fillStyle=v/max>0.5?"#00ff00":"#ff0000";
+
+    ctx.shadowBlur=15;
+    ctx.shadowColor=ctx.fillStyle;
+
+    ctx.fillText(percent+"%",x-10,y-10);
+  });
+
+  ctx.lineWidth=3;
+  ctx.strokeStyle="#00ff00";
+  ctx.shadowColor="#00ff00";
+  ctx.shadowBlur=20;
+
+  ctx.stroke();
+
+}
+
 load();
-setInterval(load,1000);
+setInterval(load,5000);
 
 </script>
 
