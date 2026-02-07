@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<!-- FORCE UTF-8 -->
 <meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
 <title>Swift Hub Control</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +13,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Anton&display=swap" rel="stylesheet">
 
 <style>
+
+/* ================= GLOBAL ================= */
 
 *{
   box-sizing:border-box;
@@ -19,6 +25,24 @@ body{
   margin:0;
   background:#000;
   color:#fff;
+}
+
+/* ================= EMOJI GLOW ================= */
+
+.emoji{
+  display:inline-block;
+  animation:emojiGlow 1.2s infinite alternate;
+}
+
+@keyframes emojiGlow{
+  0%{
+    text-shadow:0 0 5px #fff;
+    transform:scale(1);
+  }
+  100%{
+    text-shadow:0 0 20px #00ffff,0 0 35px #ff00ff;
+    transform:scale(1.15);
+  }
 }
 
 /* ================= BG ================= */
@@ -37,7 +61,7 @@ body{
   to{background-position:200%}
 }
 
-/* ================= Header ================= */
+/* ================= HEADER ================= */
 
 header{
   display:flex;
@@ -50,20 +74,20 @@ header{
   border-bottom:3px solid #fff;
 }
 
-/* Menu */
+/* MENU */
 
 .menu,.back{
   position:absolute;
   left:12px;
   top:50%;
   transform:translateY(-50%);
-  font-size:24px;
+  font-size:26px;
   cursor:pointer;
 }
 
 .back{display:none}
 
-/* ================= Title ================= */
+/* ================= TITLE ================= */
 
 .title{
   font-family:"Anton",sans-serif;
@@ -88,7 +112,7 @@ header{
   to{background-position:300%}
 }
 
-/* ================= Menu Panel ================= */
+/* ================= PANEL ================= */
 
 #panel{
   position:fixed;
@@ -116,10 +140,10 @@ header{
 
 @keyframes panelBlink{
   0%{box-shadow:0 0 5px #fff}
-  100%{box-shadow:0 0 18px #fff}
+  100%{box-shadow:0 0 20px #00ffff}
 }
 
-/* ================= Stats ================= */
+/* ================= STATS ================= */
 
 .stats{
   display:grid;
@@ -139,7 +163,7 @@ header{
 
 @keyframes boxBlink{
   0%{box-shadow:0 0 5px #fff}
-  100%{box-shadow:0 0 15px #fff}
+  100%{box-shadow:0 0 18px #00ffff}
 }
 
 .stat span{
@@ -147,7 +171,7 @@ header{
   font-weight:700;
 }
 
-/* ================= Table ================= */
+/* ================= TABLE ================= */
 
 .container{
   padding:6px;
@@ -158,28 +182,12 @@ table{
   border-collapse:collapse;
 }
 
-/* Header */
-
 th{
   background:#000;
   padding:6px;
   font-size:12px;
   border:1px solid #fff;
 }
-
-/* Emoji Glow */
-
-th span{
-  animation:emojiBlink 1.2s infinite;
-}
-
-@keyframes emojiBlink{
-  0%{text-shadow:0 0 5px #fff}
-  50%{text-shadow:0 0 15px #fff}
-  100%{text-shadow:0 0 5px #fff}
-}
-
-/* Cell */
 
 td{
   padding:6px;
@@ -189,67 +197,37 @@ td{
   word-break:break-all;
 }
 
-/* ================= Status ================= */
+/* ================= STATUS ================= */
 
 .status{
   font-size:20px;
 }
 
-/* Blink by color */
-
 .free{
   color:#00ff88;
-  animation:greenBlink 1s infinite;
+  animation:blink 1s infinite;
   text-shadow:0 0 12px #00ff88;
 }
 
 .using{
   color:#ffe600;
-  animation:yellowBlink 1s infinite;
+  animation:blink 1s infinite;
   text-shadow:0 0 12px #ffe600;
 }
 
 .expired{
   color:#ff3333;
-  animation:redBlink 1s infinite;
+  animation:blink 1s infinite;
   text-shadow:0 0 12px #ff3333;
 }
 
-@keyframes greenBlink{
+@keyframes blink{
   0%{opacity:1}
   50%{opacity:.4}
   100%{opacity:1}
 }
 
-@keyframes yellowBlink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
-}
-
-@keyframes redBlink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
-}
-
-/* ================= Chart ================= */
-
-#chartPage{
-  display:none;
-  padding:12px;
-  text-align:center;
-}
-
-canvas{
-  width:100%;
-  max-width:500px;
-  height:260px;
-  background:#050505;
-  border:2px solid #fff;
-}
-
-/* ================= Footer ================= */
+/* ================= FOOTER ================= */
 
 footer{
   text-align:center;
@@ -265,23 +243,37 @@ footer{
 
 <div id="bg"></div>
 
-<!-- MENU PANEL -->
+<!-- PANEL -->
 
 <div id="panel">
-  <div class="panel-btn" onclick="openChart()">ð Statistics</div>
-  <div class="panel-btn" onclick="closePanel()">â Close</div>
+
+  <div class="panel-btn" onclick="openChart()">
+    <span class="emoji">📊</span> Statistics
+  </div>
+
+  <div class="panel-btn" onclick="closePanel()">
+    <span class="emoji">❌</span> Close
+  </div>
+
 </div>
 
 <header>
 
-  <div class="menu" id="menuBtn" onclick="openPanel()">â°</div>
-  <div class="back" id="backBtn" onclick="backHome()">â</div>
+  <div class="menu" id="menuBtn" onclick="openPanel()">
+    <span class="emoji">☰</span>
+  </div>
 
-  <div class="title">SWIFT HUB â¢ KEY CONTROL</div>
+  <div class="back" id="backBtn" onclick="backHome()">
+    <span class="emoji">⬅️</span>
+  </div>
+
+  <div class="title">
+    SWIFT HUB • KEY CONTROL
+  </div>
 
 </header>
 
-<!-- MAIN PAGE -->
+<!-- MAIN -->
 
 <div id="mainPage">
 
@@ -300,10 +292,22 @@ footer{
 <thead>
 <tr>
   <th>#</th>
-  <th><span>ð¤</span> User</th>
-  <th><span>ð</span> Key</th>
-  <th><span>ð¦</span> Status</th>
-  <th><span>â±</span> Time</th>
+
+  <th>
+    <span class="emoji">👤</span> User
+  </th>
+
+  <th>
+    <span class="emoji">🔑</span> Key
+  </th>
+
+  <th>
+    <span class="emoji">🚦</span> Status
+  </th>
+
+  <th>
+    <span class="emoji">⏱️</span> Time
+  </th>
 </tr>
 </thead>
 
@@ -315,23 +319,25 @@ footer{
 
 </div>
 
-<!-- CHART PAGE -->
+<!-- CHART -->
 
-<div id="chartPage">
+<div id="chartPage" style="display:none;text-align:center;padding:12px">
 
-<h3>ð Monthly Usage (%)</h3>
+<h3>
+  <span class="emoji">📊</span> Monthly Usage
+</h3>
 
 <canvas id="chart"></canvas>
 
 </div>
 
 <footer>
-Swift Hub Â© 2026
+Swift Hub © 2026
 </footer>
 
 <script>
 
-/* ================= Panel ================= */
+/* ================= PANEL ================= */
 
 function openPanel(){ panel.style.display="flex"; }
 function closePanel(){ panel.style.display="none"; }
@@ -345,8 +351,6 @@ function openChart(){
 
   menuBtn.style.display="none";
   backBtn.style.display="block";
-
-  drawChart();
 }
 
 function backHome(){
@@ -358,7 +362,7 @@ function backHome(){
   backBtn.style.display="none";
 }
 
-/* ================= Time ================= */
+/* ================= TIME ================= */
 
 function format(ms){
 
@@ -370,10 +374,12 @@ function format(ms){
   let m=Math.floor((s%3600)/60);
   let se=s%60;
 
-  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${se.toString().padStart(2,"0")}`;
+  return `${h.toString().padStart(2,"0")}:${m
+    .toString().padStart(2,"0")}:${se
+    .toString().padStart(2,"0")}`;
 }
 
-/* ================= Data ================= */
+/* ================= DATA ================= */
 
 let cacheData=[];
 
@@ -398,21 +404,21 @@ async function load(){
 
       if(!k.used){
 
-        st="ð¢";
+        st="🟢";
         cls="free";
-        time="06:00:00";
+        time="FREE";
         free++;
 
       }else if(k.left>0){
 
-        st="ð¡";
+        st="🟡";
         cls="using";
         time=format(k.left);
         used++;
 
       }else{
 
-        st="ð´";
+        st="🔴";
         cls="expired";
         time="EXPIRED";
         used++;
@@ -421,8 +427,8 @@ async function load(){
       html+=`
       <tr>
         <td>${i+1}</td>
-        <td>${k.user||"â"}</td>
-        <td>${k.key.slice(0,24)}...</td>
+        <td>${k.user||"—"}</td>
+        <td>${k.key?.slice(0,24)}...</td>
         <td class="status ${cls}">${st}</td>
         <td>${time}</td>
       </tr>`;
@@ -444,104 +450,7 @@ const totalEl=document.getElementById("total");
 const freeEl=document.getElementById("free");
 const usedEl=document.getElementById("used");
 
-/* ================= Chart ================= */
-
-function drawChart(){
-
-  const cvs=document.getElementById("chart");
-  const ctx=cvs.getContext("2d");
-
-  cvs.width=500;
-  cvs.height=260;
-
-  ctx.clearRect(0,0,500,260);
-
-  let months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-  let total=cacheData.length;
-  let used=cacheData.filter(k=>k.used).length;
-
-  let percent= total>0 ? Math.round((used/total)*100) : 0;
-
-  let values=[];
-
-  for(let i=0;i<12;i++){
-
-    let v=percent + Math.floor(Math.random()*12-6);
-
-    if(v<5) v=5;
-    if(v>100) v=100;
-
-    values.push(v);
-  }
-
-  /* Grid */
-
-  ctx.strokeStyle="#333";
-
-  for(let i=0;i<=5;i++){
-
-    let y=30+i*40;
-
-    ctx.beginPath();
-    ctx.moveTo(40,y);
-    ctx.lineTo(480,y);
-    ctx.stroke();
-
-    ctx.fillStyle="#aaa";
-    ctx.fillText((100-i*20)+"%",5,y+5);
-  }
-
-  /* Line */
-
-  let color= percent>50 ? "#00ff88" : "#ff3333";
-
-  ctx.beginPath();
-
-  values.forEach((v,i)=>{
-
-    let x=40+i*(440/11);
-    let y=30+(100-v)*2;
-
-    if(i==0) ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
-  });
-
-  ctx.strokeStyle=color;
-  ctx.lineWidth=3;
-
-  ctx.shadowBlur=20;
-  ctx.shadowColor=color;
-
-  ctx.stroke();
-
-  /* Points */
-
-  values.forEach((v,i)=>{
-
-    let x=40+i*(440/11);
-    let y=30+(100-v)*2;
-
-    ctx.beginPath();
-    ctx.arc(x,y,4,0,Math.PI*2);
-
-    ctx.fillStyle=color;
-    ctx.fill();
-  });
-
-  /* Months */
-
-  ctx.fillStyle="#fff";
-
-  months.forEach((m,i)=>{
-
-    let x=40+i*(440/11);
-
-    ctx.fillText(m,x-10,250);
-  });
-}
-
-/* ================= Start ================= */
+/* ================= START ================= */
 
 load();
 setInterval(load,2000);
