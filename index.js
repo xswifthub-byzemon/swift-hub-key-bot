@@ -1,5 +1,5 @@
 // ==================================
-// Swift Hub v3.0 FINAL
+// Swift Hub v3.1 FINAL FULL
 // By Pai 💖 For ซีม่อน
 // ==================================
 
@@ -16,7 +16,8 @@ const {
   TextInputBuilder,
   TextInputStyle,
   Events,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  EmbedBuilder
 } = require("discord.js");
 
 const fs = require("fs");
@@ -65,8 +66,8 @@ function genKey() {
   return `SwiftHub-${rand(8)}-${rand(8)}-${rand(6)}`;
 }
 
-function genDevKey() {
-  return `DEV-swiftHub-${rand(12)}@฿${rand(6)}`;
+function genDevKey(name) {
+  return `${name}-${rand(10)}@฿${rand(6)}`;
 }
 
 function genTemp(uid) {
@@ -111,9 +112,9 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("devkey")
-    .setDescription("Create Dev/Test Key (Admin)")
+    .setDescription("Create Dev/Test Key")
     .addStringOption(o =>
-      o.setName("name").setDescription("Key Name").setRequired(true))
+      o.setName("name").setDescription("Key Prefix").setRequired(true))
     .addIntegerOption(o =>
       o.setName("time").setDescription("Time").setRequired(true))
     .addStringOption(o =>
@@ -138,14 +139,11 @@ const commands = [
 const rest = new REST({ version: "10" }).setToken(TOKEN);
 
 (async () => {
-
   await rest.put(
     Routes.applicationCommands(CLIENT_ID),
     { body: commands }
   );
-
   console.log("✅ Commands Loaded");
-
 })();
 
 // ================= READY =================
@@ -167,6 +165,24 @@ client.on(Events.InteractionCreate, async i => {
     // PANEL
     if (i.commandName === "panel") {
 
+      const embed = new EmbedBuilder()
+        .setTitle("🚀 Swift Hub Key System")
+        .setDescription(`
+🔹 HOW TO USE
+1. Get Key
+2. Redeem
+3. Use Script
+
+📌 วิธีใช้งาน
+1. กด Get Key
+2. Redeem
+3. ใช้งาน
+
+⚠️ 1 คนใช้ได้ 1 คีย์ ต่อรอบ
+        `)
+        .setImage("https://i.imgur.com/4M7IWwP.png")
+        .setColor(0xff3366);
+
       const row = new ActionRowBuilder().addComponents(
 
         new ButtonBuilder()
@@ -186,7 +202,7 @@ client.on(Events.InteractionCreate, async i => {
       );
 
       return i.reply({
-        content: "🚀 Swift Hub Panel",
+        embeds: [embed],
         components: [row]
       });
     }
@@ -198,10 +214,8 @@ client.on(Events.InteractionCreate, async i => {
         return i.reply({ content: "❌ Owner Only", ephemeral: true });
 
       const menu = new StringSelectMenuBuilder()
-
         .setCustomId("bulk_time")
         .setPlaceholder("Select Duration")
-
         .addOptions(
           { label: "6 Hours", value: "6" },
           { label: "12 Hours", value: "12" },
@@ -233,7 +247,7 @@ client.on(Events.InteractionCreate, async i => {
 
       for (let x = 0; x < amount; x++) {
 
-        let k = genDevKey();
+        let k = genDevKey(name);
 
         db.push({
 
@@ -272,10 +286,8 @@ ${list.map(k=>"• "+k).join("\n")}
 🧪 สร้างคีย์เทสแล้ว
 ใช้ได้ทันที 💖`;
 
-      // Ephemeral
       await i.reply({ content: text, ephemeral: true });
 
-      // DM
       try { await i.user.send(text); } catch {}
     }
   }
@@ -499,7 +511,6 @@ app.get("/api/dashboard",(req,res)=>{
 
     key:k.key,
     type:k.type,
-
     name:k.name||null,
 
     user:k.username,
