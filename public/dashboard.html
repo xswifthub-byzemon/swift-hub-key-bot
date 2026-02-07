@@ -1,136 +1,215 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Swift Hub</title>
-<meta name="viewport" content="width=device-width">
+<title>Swift Hub Control</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
 
-body{
-  background:black;
-  color:white;
-  font-family:Orbitron,sans-serif;
-  margin:0;
+*{
+  box-sizing:border-box;
+  font-family:"Rajdhani","Orbitron",sans-serif;
 }
 
-/* ================= HEADER ================= */
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  overflow-x:hidden;
+}
+
+/* ================= Background ================= */
+
+#bg{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  opacity:.12;
+}
+
+#bg{
+  background:linear-gradient(180deg,#111,#000,#111);
+  animation:bgmove 12s linear infinite;
+}
+
+@keyframes bgmove{
+  from{background-position:0%}
+  to{background-position:200%}
+}
+
+/* ================= Header ================= */
 
 header{
-  padding:12px;
   text-align:center;
-  border-bottom:2px solid white;
-  position:relative;
+  padding:18px 10px;
+  background:#000;
+  border-bottom:2px solid #222;
 }
 
-.menu,.back{
-  position:absolute;
-  left:10px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:22px;
-  cursor:pointer;
-}
+/* ================= Title ================= */
 
-.back{display:none}
+.title{
+  font-size:26px;
+  font-weight:700;
+  letter-spacing:2px;
 
-/* Title Gradient */
+  background:linear-gradient(
+    90deg,
+    #fff,
+    #000,
+    #fff
+  );
 
-h1{
-  font-size:22px;
-  background:linear-gradient(90deg,#fff,#ff0000,#fff);
-  background-size:300%;
+  background-size:200%;
   -webkit-background-clip:text;
   color:transparent;
-  animation:titleFlow 4s linear infinite;
+
+  animation:titleFlow 5s linear infinite;
+
+  text-shadow:
+    0 0 12px #000,
+    0 0 25px #000;
 }
 
 @keyframes titleFlow{
   from{background-position:0%}
-  to{background-position:300%}
+  to{background-position:200%}
 }
 
-/* ================= TABLE ================= */
+/* ================= Stats ================= */
 
-table{
-  width:100%;
-  border-collapse:collapse;
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:12px;
 }
 
-th,td{
-  border:1px solid white;
-  padding:5px;
+.stat{
+  background:#0b0b0b;
+  border:2px solid #fff;
+  animation:boxBlink 1.5s infinite alternate;
+  padding:10px;
   text-align:center;
-  font-size:11px;
-  word-break:break-all;
+  border-radius:6px;
 }
 
-/* ================= STATUS ================= */
-
-.green{
-  color:#00ff88;
-  animation:blink 1s infinite;
-  text-shadow:0 0 12px #00ff88;
-}
-
-.yellow{
-  color:#ffe600;
-  animation:blink 1s infinite;
-  text-shadow:0 0 12px #ffe600;
-}
-
-.red{
-  color:#ff3333;
-  animation:blink 1s infinite;
-  text-shadow:0 0 12px #ff3333;
-}
-
-@keyframes blink{
-  0%{opacity:1}
-  50%{opacity:.4}
-  100%{opacity:1}
-}
-
-/* ================= PANEL ================= */
-
-#panel{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:none;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  gap:15px;
-  z-index:99;
-}
-
-.btn{
-  border:1px solid white;
-  padding:10px 20px;
-  cursor:pointer;
-  animation:panelBlink 1s infinite alternate;
-}
-
-@keyframes panelBlink{
+@keyframes boxBlink{
   0%{box-shadow:0 0 5px #fff}
   100%{box-shadow:0 0 15px #fff}
 }
 
-/* ================= PAGES ================= */
-
-#chartPage,
-#dataPage{
-  display:none;
-  text-align:center;
-  padding:10px;
+.stat h3{
+  margin:2px 0;
+  font-size:13px;
+  color:#aaa;
 }
 
-/* ================= CANVAS ================= */
+.stat span{
+  font-size:22px;
+  font-weight:700;
+}
 
-canvas{
-  border:1px solid white;
-  box-shadow:0 0 15px #fff;
+/* ================= Table ================= */
+
+.container{
+  padding:8px;
+}
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 8px;
+  table-layout:fixed;
+}
+
+th,td{
+  text-align:center;
+}
+
+th{
+  font-size:12px;
+  color:#fff;
+  padding:8px;
+  background:#050505;
+}
+
+/* Emoji Glow */
+
+th span{
+  animation:emojiBlink 1.5s infinite;
+  display:inline-block;
+}
+
+@keyframes emojiBlink{
+  0%{text-shadow:0 0 5px #fff}
+  50%{text-shadow:0 0 15px #fff}
+  100%{text-shadow:0 0 5px #fff}
+}
+
+td{
+  padding:10px 5px;
+  font-size:12px;
+  word-break:break-all;
+}
+
+/* Row */
+
+tr{
+  background:#0b0b0b;
+  border:2px solid #fff;
+
+  animation:rowBlink 1.3s infinite alternate;
+}
+
+@keyframes rowBlink{
+  0%{box-shadow:0 0 5px #fff}
+  100%{box-shadow:0 0 12px #fff}
+}
+
+tr:hover{
+  background:#151515;
+}
+
+/* ================= Status ================= */
+
+.status{
+  font-size:18px;
+  animation:blink 1.2s infinite;
+}
+
+@keyframes blink{
+  0%{opacity:1}
+  50%{opacity:.5}
+  100%{opacity:1}
+}
+
+.free{
+  color:#00ff88;
+  text-shadow:0 0 10px #00ff88;
+}
+
+.using{
+  color:#ffe600;
+  text-shadow:0 0 10px #ffe600;
+}
+
+.expired{
+  color:#ff3333;
+  text-shadow:0 0 10px #ff3333;
+}
+
+/* ================= Footer ================= */
+
+footer{
+  text-align:center;
+  font-size:11px;
+  color:#666;
+  padding:12px;
 }
 
 </style>
@@ -138,212 +217,67 @@ canvas{
 
 <body>
 
-<!-- MENU PANEL -->
-
-<div id="panel">
-  <div class="btn" onclick="openMain()">📋 Keys</div>
-  <div class="btn" onclick="openData()">📄 Data</div>
-  <div class="btn" onclick="openChart()">📊 Chart</div>
-  <div class="btn" onclick="closePanel()">❌ Close</div>
-</div>
+<div id="bg"></div>
 
 <header>
 
-  <div class="menu" id="menuBtn" onclick="openPanel()">☰</div>
-  <div class="back" id="backBtn" onclick="backHome()">←</div>
-
-  <h1>SWIFT HUB • KEY CONTROL</h1>
+  <!-- TITLE -->
+  <div class="title">SWIFT HUB • KEY CONTROL</div>
 
 </header>
 
-<!-- ================= MAIN ================= -->
+<!-- STATS -->
 
-<div id="main">
+<div class="stats">
+
+  <div class="stat">
+    <h3>Total Keys</h3>
+    <span id="total">0</span>
+  </div>
+
+  <div class="stat">
+    <h3>Free Keys</h3>
+    <span id="free">0</span>
+  </div>
+
+  <div class="stat">
+    <h3>Used Keys</h3>
+    <span id="used">0</span>
+  </div>
+
+</div>
+
+<div class="container">
 
 <table>
+
 <thead>
 <tr>
-<th>#</th>
-<th>User</th>
-<th>Key</th>
-<th>Status</th>
-<th>Time</th>
+  <th>No.</th>
+  <th><span>👤</span> User</th>
+  <th><span>🔑</span> Key</th>
+  <th><span>🚦</span> Status</th>
+  <th><span>⏱</span> Time</th>
 </tr>
 </thead>
 
 <tbody id="data"></tbody>
+
 </table>
 
 </div>
 
-<!-- ================= DATA PAGE ================= -->
-
-<div id="dataPage">
-
-<h3>📄 User Data</h3>
-
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>👤 User</th>
-<th>🆔 UID</th>
-<th>🌐 IP</th>
-<th>💻 HWID</th>
-<th>🔑 Key</th>
-</tr>
-</thead>
-
-<tbody id="dataInfo"></tbody>
-</table>
-
-</div>
-
-<!-- ================= CHART ================= -->
-
-<div id="chartPage">
-
-<h3>📊 Usage Chart (%)</h3>
-
-<canvas id="chart" width="320" height="220"></canvas>
-
-<br><br>
-
-<button onclick="download()">⬇ Download</button>
-
-</div>
+<footer>
+Swift Hub © 2026 • Secure System
+</footer>
 
 <script>
 
-let cache=[];
-
-/* ================= PANEL ================= */
-
-function openPanel(){ panel.style.display="flex"; }
-function closePanel(){ panel.style.display="none"; }
-
-function openMain(){
-
-  panel.style.display="none";
-
-  main.style.display="block";
-  dataPage.style.display="none";
-  chartPage.style.display="none";
-
-  menuBtn.style.display="block";
-  backBtn.style.display="none";
-}
-
-function openData(){
-
-  panel.style.display="none";
-
-  main.style.display="none";
-  dataPage.style.display="block";
-  chartPage.style.display="none";
-
-  menuBtn.style.display="none";
-  backBtn.style.display="block";
-
-  renderData();
-}
-
-function openChart(){
-
-  panel.style.display="none";
-
-  main.style.display="none";
-  dataPage.style.display="none";
-  chartPage.style.display="block";
-
-  menuBtn.style.display="none";
-  backBtn.style.display="block";
-
-  draw();
-}
-
-function backHome(){
-
-  main.style.display="block";
-  dataPage.style.display="none";
-  chartPage.style.display="none";
-
-  menuBtn.style.display="block";
-  backBtn.style.display="none";
-}
-
-/* ================= LOAD ================= */
-
-async function load(){
-
-  let r = await fetch("/api/dashboard");
-  let d = await r.json();
-
-  cache = d;
-
-  let h="";
-
-  d.forEach((k,i)=>{
-
-    let st="",cls="",time="-";
-
-    if(!k.used){
-
-      st="🟢";
-      cls="green";
-
-    }else if(k.left>0){
-
-      st="🟡";
-      cls="yellow";
-
-      time = format(k.left);
-
-    }else{
-
-      st="🔴";
-      cls="red";
-      time="EXPIRED";
-    }
-
-    h+=`
-<tr>
-<td>${i+1}</td>
-<td>${k.user||"-"}</td>
-<td>${k.key||"-"}</td>
-<td class="${cls}">${st}</td>
-<td>${time}</td>
-</tr>`;
-  });
-
-  data.innerHTML=h;
-}
-
-/* ================= DATA PAGE ================= */
-
-function renderData(){
-
-  let h="";
-
-  cache.forEach((k,i)=>{
-
-    h+=`
-<tr>
-<td>${i+1}</td>
-<td>${k.user||"-"}</td>
-<td>${k.uid||"-"}</td>
-<td>${k.ip||"-"}</td>
-<td>${k.hwid||"-"}</td>
-<td>${k.key||"-"}</td>
-</tr>`;
-  });
-
-  dataInfo.innerHTML=h;
-}
-
-/* ================= TIME ================= */
+/* ================= Time ================= */
 
 function format(ms){
+
+  if(ms<=0) return "00:00:00";
 
   let s=Math.floor(ms/1000);
 
@@ -351,68 +285,80 @@ function format(ms){
   let m=Math.floor((s%3600)/60);
   let se=s%60;
 
-  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${se.toString().padStart(2,"0")}`;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(se).padStart(2,"0")}`;
 }
 
-/* ================= CHART ================= */
+/* ================= Load ================= */
 
-function draw(){
+async function load(){
 
-  let c=chart;
-  let ctx=c.getContext("2d");
+  try{
 
-  ctx.clearRect(0,0,320,220);
+    const res=await fetch("/api/dashboard");
+    const data=await res.json();
 
-  let total=cache.length;
-  let used=cache.filter(x=>x.used).length;
+    let html="";
 
-  let p= total?Math.round(used/total*100):0;
+    let total=data.length;
+    let free=0;
+    let used=0;
 
-  let color= p>50?"#00ff88":"#ff3333";
+    data.forEach((k,i)=>{
 
-  ctx.strokeStyle=color;
-  ctx.lineWidth=3;
-  ctx.shadowBlur=20;
-  ctx.shadowColor=color;
+      let st="",cls="",time="";
 
-  ctx.beginPath();
+      if(!k.used){
 
-  for(let i=0;i<12;i++){
+        st="🟢";
+        cls="free";
+        time="06:00:00";
+        free++;
 
-    let v=p+Math.random()*12-6;
+      }else if(k.left>0){
 
-    if(v<5)v=5;
-    if(v>100)v=100;
+        st="🟡";
+        cls="using";
+        time=format(k.left);
+        used++;
 
-    let x=20+i*25;
-    let y=200-v*1.7;
+      }else{
 
-    if(i==0)ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
+        st="🔴";
+        cls="expired";
+        time="EXPIRED";
+        used++;
+      }
+
+      html+=`
+      <tr>
+
+        <td>${i+1}</td>
+
+        <td>${k.user||"—"}</td>
+
+        <td>${k.key.slice(0,26)}...</td>
+
+        <td class="status ${cls}">${st}</td>
+
+        <td>${time}</td>
+
+      </tr>
+      `;
+    });
+
+    document.getElementById("data").innerHTML=html;
+
+    document.getElementById("total").textContent=total;
+    document.getElementById("free").textContent=free;
+    document.getElementById("used").textContent=used;
+
+  }catch(e){
+    console.log(e);
   }
-
-  ctx.stroke();
-
-  ctx.fillStyle="#fff";
-  ctx.fillText(p+"%",260,25);
 }
-
-/* ================= DOWNLOAD ================= */
-
-function download(){
-
-  let a=document.createElement("a");
-
-  a.href=chart.toDataURL("image/png");
-  a.download="swift_hub_chart.png";
-
-  a.click();
-}
-
-/* ================= START ================= */
 
 load();
-setInterval(load,2000);
+setInterval(load,1000);
 
 </script>
 
