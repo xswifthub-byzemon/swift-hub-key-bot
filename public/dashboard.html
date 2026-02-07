@@ -315,10 +315,11 @@ footer{
 <thead>
 <tr>
   <th>#</th>
-  <th>Name</th>
-  <th>Key</th>
-  <th>📋</th>
-  <th>Status</th>
+  <th><span>📛</span> Name</th>
+  <th><span>🔑</span> Key</th>
+  <th><span>📋</span> Copy</th>
+  <th><span>🚦</span> Status</th>
+  <th><span>⏱</span> Time</th>
 </tr>
 </thead>
 
@@ -383,6 +384,7 @@ function backHome(){
 
 function format(ms){
 
+  if(ms===null) return "∞";
   if(ms<=0) return "00:00:00";
 
   let s=Math.floor(ms/1000);
@@ -420,7 +422,10 @@ async function load(){
   let free=0;
   let used=0;
 
-  data.forEach((k,i)=>{
+  let idx=1;
+  let tidx=1;
+
+  data.forEach(k=>{
 
     let st="",cls="",time="";
 
@@ -431,7 +436,7 @@ async function load(){
       time="06:00:00";
       free++;
 
-    }else if(k.left>0){
+    }else if(k.left>0 || k.left===null){
 
       st="🟡";
       cls="using";
@@ -446,11 +451,12 @@ async function load(){
       used++;
     }
 
+    // NORMAL
     if(k.type!=="test"){
 
       html+=`
       <tr>
-        <td>${i+1}</td>
+        <td>${idx++}</td>
         <td>${k.user||"—"}</td>
         <td>
           ${k.key.slice(0,24)}...
@@ -461,17 +467,19 @@ async function load(){
       </tr>`;
     }
 
+    // TEST
     if(k.type==="test"){
 
       testHtml+=`
       <tr>
-        <td>${i+1}</td>
+        <td>${tidx++}</td>
         <td>${k.name||"-"}</td>
+        <td>${k.key}</td>
         <td>
-          ${k.key}
           <span class="copyBtn" onclick="copyKey('${k.key}')">📋</span>
         </td>
-        <td>${st}</td>
+        <td class="status ${cls}">${st}</td>
+        <td>${time}</td>
       </tr>`;
     }
 
