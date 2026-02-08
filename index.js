@@ -1,6 +1,6 @@
 // ==================================
 // Swift Hub Full System ULTIMATE
-// FREE / PREMIUM / REDEEM / PANEL / API
+// AUTO CLEAN EXPIRED KEYS VERSION
 // By Pai 💖 For ซีม่อน
 // ==================================
 
@@ -67,6 +67,35 @@ function saveDB(d) {
   fs.writeFileSync(DB_FILE, JSON.stringify(d, null, 2));
 }
 
+/* ================= CLEAN EXPIRED ================= */
+
+function cleanExpired() {
+
+  let db = loadDB();
+  const now = Date.now();
+
+  const before = db.length;
+
+  db = db.filter(k => {
+
+    // ยังไม่เริ่มใช้งาน = เก็บไว้
+    if (!k.start || !k.expire) return true;
+
+    // หมดอายุ = ลบทิ้ง
+    if (k.expire <= now) return false;
+
+    return true;
+  });
+
+  if (before !== db.length) {
+    saveDB(db);
+    console.log(`🧹 Cleaned ${before - db.length} expired keys`);
+  }
+}
+
+/* Auto Clean ทุก 1 นาที */
+setInterval(cleanExpired, 60 * 1000);
+
 /* ================= UTILS ================= */
 
 const CHARSET =
@@ -89,9 +118,11 @@ function genKey(prefix) {
 }
 
 function parseTime(v, u) {
+
   if (v === "inf" || u === "inf") return null;
 
   const n = Number(v);
+
   if (isNaN(n) || n <= 0) return null;
 
   if (u === "s") return n * 1000;
@@ -103,14 +134,14 @@ function parseTime(v, u) {
 }
 
 function hasActive(db, uid) {
+
   const now = Date.now();
 
-  return db.find(
-    k =>
-      k.user === uid &&
-      k.redeemed &&
-      k.start &&
-      (!k.expire || k.expire > now)
+  return db.find(k =>
+    k.user === uid &&
+    k.redeemed &&
+    k.start &&
+    (!k.expire || k.expire > now)
   );
 }
 
@@ -155,8 +186,6 @@ client.once("ready", () => {
 
 client.on(Events.InteractionCreate, async interaction => {
 
-  /* ================= SLASH ================= */
-
   if (interaction.isChatInputCommand()) {
 
     /* PANEL */
@@ -196,75 +225,6 @@ client.on(Events.InteractionCreate, async interaction => {
         components: [row]
       });
     }
-
-    /* FREEKEY */
-
-    if (interaction.commandName === "freekey") {
-
-      if (interaction.user.id !== OWNER_ID)
-        return interaction.reply({ content: "❌ Owner Only", ephemeral: true });
-
-      const menu = new StringSelectMenuBuilder()
-        .setCustomId("free_select")
-        .setPlaceholder("Select Duration")
-        .addOptions([
-          { label: "6 Hours", value: "6" },
-          { label: "12 Hours", value: "12" },
-          { label: "24 Hours", value: "24" },
-          { label: "Random", value: "random" }
-        ]);
-
-      return interaction.reply({
-        content: "🎁 Select Duration",
-        components: [new ActionRowBuilder().addComponents(menu)],
-        ephemeral: true
-      });
-    }
-
-    /* PREMIUM */
-
-    if (interaction.commandName === "premiumkey") {
-
-      if (interaction.user.id !== OWNER_ID)
-        return interaction.reply({ content: "❌ Owner Only", ephemeral: true });
-
-      const modal = new ModalBuilder()
-        .setCustomId("premium_modal")
-        .setTitle("Create Premium Key");
-
-      const prefix = new TextInputBuilder()
-        .setCustomId("prefix")
-        .setLabel("Prefix (VIP / PRO / PREMIUM)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const amount = new TextInputBuilder()
-        .setCustomId("amount")
-        .setLabel("Amount (1-10)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const time = new TextInputBuilder()
-        .setCustomId("time")
-        .setLabel("Time (number / inf)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const unit = new TextInputBuilder()
-        .setCustomId("unit")
-        .setLabel("Unit (s/m/h/d/inf)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(prefix),
-        new ActionRowBuilder().addComponents(amount),
-        new ActionRowBuilder().addComponents(time),
-        new ActionRowBuilder().addComponents(unit)
-      );
-
-      return interaction.showModal(modal);
-    }
   }
 
   /* ================= MODAL ================= */
@@ -273,48 +233,15 @@ client.on(Events.InteractionCreate, async interaction => {
 
     let db = loadDB();
 
-    /* REDEEM */
-
-    if (interaction.customId === "redeem_modal") {
-
-      let token = interaction.fields.getTextInputValue("token");
-
-      let t = db.find(k => k.key === token && k.type === "token");
-
-      if (!t)
-        return interaction.reply({ content: "❌ Invalid Token", ephemeral: true });
-
-      let free = db.find(k => k.type === "free" && k.temp);
-
-      if (!free)
-        return interaction.reply({ content: "❌ No Free Key", ephemeral: true });
-
-      free.temp = false;
-      free.redeemed = true;
-
-      free.user = interaction.user.id;
-      free.username = interaction.user.username;
-
-      // ❌ ยังไม่เริ่มเวลา
-      free.start = null;
-      free.expire = null;
-
-      db.splice(db.indexOf(t), 1);
-
-      saveDB(db);
-
-      return interaction.reply({
-        content: "✅ Redeem สำเร็จ (จะเริ่มนับตอนใช้งานครั้งแรก)",
-        ephemeral: true
-      });
-    }
-
     /* PREMIUM */
 
     if (interaction.customId === "premium_modal") {
 
       if (interaction.user.id !== OWNER_ID)
-        return interaction.reply({ content: "❌ Owner Only", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Owner Only",
+          ephemeral: true
+        });
 
       const prefix =
         interaction.fields.getTextInputValue("prefix").toUpperCase();
@@ -329,7 +256,10 @@ client.on(Events.InteractionCreate, async interaction => {
         interaction.fields.getTextInputValue("unit");
 
       if (amount < 1 || amount > 10)
-        return interaction.reply({ content: "❌ Amount 1-10 only", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Amount 1-10 only",
+          ephemeral: true
+        });
 
       let ms = parseTime(time, unit);
 
@@ -348,7 +278,6 @@ client.on(Events.InteractionCreate, async interaction => {
           user: null,
           username: null,
 
-          // ❌ ยังไม่เริ่มเวลา
           start: null,
           expire: null,
 
@@ -363,16 +292,13 @@ client.on(Events.InteractionCreate, async interaction => {
 
       saveDB(db);
 
-      const msg = `
-💎 PREMIUM KEYS
+      return interaction.reply({
+        content:
+`💎 PREMIUM KEYS
 
-${keys.map(k=>`\`${k}\``).join("\n")}
+${keys.map(k => `\`${k}\``).join("\n")}
 
-⏳ เริ่มนับตอนใช้งานครั้งแรก
-`;
-
-      await interaction.reply({
-        content: msg,
+⏳ Start when first use`,
         ephemeral: true
       });
     }
@@ -382,6 +308,8 @@ ${keys.map(k=>`\`${k}\``).join("\n")}
 /* ================= API ================= */
 
 app.get("/verify", (req, res) => {
+
+  cleanExpired();
 
   const { key, ip, hwid } = req.query;
 
@@ -393,7 +321,7 @@ app.get("/verify", (req, res) => {
 
   const now = Date.now();
 
-  /* ✅ Activate ครั้งแรก */
+  /* Activate First Use */
   if (!d.start) {
 
     d.start = now;
@@ -409,8 +337,10 @@ app.get("/verify", (req, res) => {
     saveDB(db);
   }
 
-  if (d.expire && d.expire < now)
+  if (d.expire && d.expire <= now) {
+    cleanExpired();
     return res.json({ status: "expired" });
+  }
 
   if (!d.ip && !d.hwid) {
 
@@ -435,6 +365,8 @@ app.get("/verify", (req, res) => {
 
 app.get("/api/dashboard", (req, res) => {
 
+  cleanExpired();
+
   const db = loadDB();
   const now = Date.now();
 
@@ -454,6 +386,8 @@ app.get("/api/dashboard", (req, res) => {
 
   })));
 });
+
+/* ================= START ================= */
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public/dashboard.html"));
