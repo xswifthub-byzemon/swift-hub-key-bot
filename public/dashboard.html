@@ -528,6 +528,11 @@ function copyKey(k){
   alert("✅ Copied");
 }
 
+/* COUNT ELEMENT */
+
+const freeCountEl=document.getElementById("freeCount");
+const premiumCountEl=document.getElementById("premiumCount");
+
 /* LOAD DATA */
 
 async function load(){
@@ -556,8 +561,6 @@ async function load(){
         cls="expired";st="🔴";time="EXPIRED";
       }
 
-      /* FREE */
-
       if(k.type==="free"){
 
         freeCount++;
@@ -571,8 +574,6 @@ async function load(){
           <td>${time}</td>
         </tr>`;
       }
-
-      /* PREMIUM */
 
       if(k.type==="premium"){
 
@@ -595,8 +596,8 @@ async function load(){
     freeData.innerHTML=freeHTML;
     testData.innerHTML=testHTML;
 
-    freeCount.textContent=freeCount;
-    premiumCount.textContent=premiumCount;
+    freeCountEl.textContent=freeCount;
+    premiumCountEl.textContent=premiumCount;
 
   }catch(e){
     console.log(e)
