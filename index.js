@@ -109,6 +109,7 @@ function hasActive(db, uid) {
     k =>
       k.user === uid &&
       k.redeemed &&
+      k.start &&
       (!k.expire || k.expire > now)
   );
 }
@@ -266,161 +267,6 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   }
 
-  /* ================= SELECT ================= */
-
-  if (interaction.isStringSelectMenu()) {
-
-    if (interaction.customId === "free_select") {
-
-      let db = loadDB();
-      let list = [];
-
-      let val = interaction.values[0];
-
-      let pool = [];
-
-      if (val === "6") pool = [6];
-      else if (val === "12") pool = [12];
-      else if (val === "24") pool = [24];
-      else pool = [6, 12, 24];
-
-      for (let i = 0; i < 50; i++) {
-
-        let h = pool[Math.floor(Math.random() * pool.length)];
-
-        let key = genFreeKey();
-
-        db.push({
-          key,
-          type: "free",
-
-          temp: true,
-          redeemed: false,
-
-          user: null,
-          username: null,
-
-          start: null,
-          expire: null,
-
-          hours: h,
-
-          ip: null,
-          hwid: null
-        });
-
-        list.push(`${key} (${h}h)`);
-      }
-
-      saveDB(db);
-
-      await interaction.update({
-        content: "✅ Created",
-        components: []
-      });
-
-      await interaction.followUp({
-        content: "```" + list.join("\n") + "```",
-        ephemeral: true
-      });
-    }
-  }
-
-  /* ================= BUTTON ================= */
-
-  if (interaction.isButton()) {
-
-    let db = loadDB();
-    let uid = interaction.user.id;
-
-    /* GETKEY */
-
-    if (interaction.customId === "getkey") {
-
-      if (hasActive(db, uid))
-        return interaction.reply({ content: "❌ You still have active key", ephemeral: true });
-
-      let token = genKey("TOKEN");
-
-      db.push({
-        key: token,
-        type: "token",
-
-        user: uid,
-        username: interaction.user.username,
-
-        redeemed: false,
-
-        start: null,
-        expire: null,
-
-        ip: null,
-        hwid: null
-      });
-
-      saveDB(db);
-
-      return interaction.reply({
-        content: `
-🔐 TEMP TOKEN
-
-🇬🇧 Copy and Redeem
-🇹🇭 นำไป Redeem
-
-Token:
-\`${token}\`
-`,
-        ephemeral: true
-      });
-    }
-
-    /* INFO */
-
-    if (interaction.customId === "info") {
-
-      let d = hasActive(db, uid);
-
-      if (!d)
-        return interaction.reply({ content: "❌ No Active Key", ephemeral: true });
-
-      let left = d.expire
-        ? Math.floor((d.expire - Date.now()) / 1000)
-        : null;
-
-      return interaction.reply({
-        content: `
-Key: \`${d.key}\`
-Time: ${left ? left + "s" : "∞"}
-`,
-        ephemeral: true
-      });
-    }
-
-    /* REDEEM */
-
-    if (interaction.customId === "redeem") {
-
-      if (hasActive(db, uid))
-        return interaction.reply({ content: "❌ Wait until expired", ephemeral: true });
-
-      const modal = new ModalBuilder()
-        .setCustomId("redeem_modal")
-        .setTitle("Redeem Token");
-
-      const input = new TextInputBuilder()
-        .setCustomId("token")
-        .setLabel("Enter TOKEN")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(input)
-      );
-
-      return interaction.showModal(modal);
-    }
-  }
-
   /* ================= MODAL ================= */
 
   if (interaction.isModalSubmit()) {
@@ -443,38 +289,22 @@ Time: ${left ? left + "s" : "∞"}
       if (!free)
         return interaction.reply({ content: "❌ No Free Key", ephemeral: true });
 
-      let now = Date.now();
-
       free.temp = false;
       free.redeemed = true;
 
       free.user = interaction.user.id;
       free.username = interaction.user.username;
 
-      free.start = now;
-      free.expire = now + free.hours * 3600000;
+      // ❌ ยังไม่เริ่มเวลา
+      free.start = null;
+      free.expire = null;
 
       db.splice(db.indexOf(t), 1);
 
       saveDB(db);
 
-      const msg = `
-🎉 FREE KEY
-
-👤 ${interaction.user.username}
-🔑 \`${free.key}\`
-⏳ ${free.hours}h
-
-🇬🇧 Use it now!
-🇹🇭 ใช้งานได้ทันที 💖
-`;
-
-      try {
-        await interaction.user.send(msg);
-      } catch {}
-
-      await interaction.reply({
-        content: msg,
+      return interaction.reply({
+        content: "✅ Redeem สำเร็จ (จะเริ่มนับตอนใช้งานครั้งแรก)",
         ephemeral: true
       });
     }
@@ -502,7 +332,6 @@ Time: ${left ? left + "s" : "∞"}
         return interaction.reply({ content: "❌ Amount 1-10 only", ephemeral: true });
 
       let ms = parseTime(time, unit);
-      let now = Date.now();
 
       let keys = [];
 
@@ -519,8 +348,11 @@ Time: ${left ? left + "s" : "∞"}
           user: null,
           username: null,
 
-          start: now,
-          expire: ms ? now + ms : null,
+          // ❌ ยังไม่เริ่มเวลา
+          start: null,
+          expire: null,
+
+          duration: ms,
 
           ip: null,
           hwid: null
@@ -536,12 +368,8 @@ Time: ${left ? left + "s" : "∞"}
 
 ${keys.map(k=>`\`${k}\``).join("\n")}
 
-Keep it safe 💖
+⏳ เริ่มนับตอนใช้งานครั้งแรก
 `;
-
-      try {
-        await interaction.user.send(msg);
-      } catch {}
 
       await interaction.reply({
         content: msg,
@@ -563,7 +391,25 @@ app.get("/verify", (req, res) => {
 
   if (!d) return res.json({ status: "invalid" });
 
-  if (d.expire && d.expire < Date.now())
+  const now = Date.now();
+
+  /* ✅ Activate ครั้งแรก */
+  if (!d.start) {
+
+    d.start = now;
+
+    if (d.type === "free") {
+      d.expire = now + d.hours * 3600000;
+    }
+
+    if (d.type === "premium" && d.duration) {
+      d.expire = now + d.duration;
+    }
+
+    saveDB(db);
+  }
+
+  if (d.expire && d.expire < now)
     return res.json({ status: "expired" });
 
   if (!d.ip && !d.hwid) {
@@ -580,7 +426,7 @@ app.get("/verify", (req, res) => {
   return res.json({
     status: "valid",
     left: d.expire
-      ? Math.floor((d.expire - Date.now()) / 1000)
+      ? Math.floor((d.expire - now) / 1000)
       : null
   });
 });
