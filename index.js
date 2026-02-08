@@ -37,7 +37,8 @@ const OWNER_ID = process.env.OWNER_ID;
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.DirectMessages
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.GuildMembers
   ],
   partials: ["CHANNEL"]
 });
@@ -71,7 +72,7 @@ function saveDB(d) {
 const CHARSET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789฿&@!?";
 
-function randSpecial(len = 12) {
+function randSpecial(len = 10) {
   let out = "";
   for (let i = 0; i < len; i++) {
     out += CHARSET[Math.floor(Math.random() * CHARSET.length)];
@@ -80,7 +81,7 @@ function randSpecial(len = 12) {
 }
 
 function genFreeKey() {
-  return `FREEKEY-SWIFTHUB-${Date.now()}-${randSpecial(10)}`;
+  return `FREEKEY-SWIFTHUB-${Date.now()}-${randSpecial()}`;
 }
 
 function genKey(prefix) {
@@ -122,7 +123,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("freekey")
-    .setDescription("Generate 50 Free Keys (Owner)"),
+    .setDescription("Generate Free Keys (Owner)"),
 
   new SlashCommandBuilder()
     .setName("premiumkey")
@@ -157,22 +158,17 @@ client.on(Events.InteractionCreate, async interaction => {
 
   if (interaction.isChatInputCommand()) {
 
-    /* ===== PANEL ===== */
+    /* PANEL */
 
     if (interaction.commandName === "panel") {
 
       const embed = new EmbedBuilder()
-        .setTitle("🚀 Swift Hub | Panel")
+        .setTitle("🚀 Swift Hub Panel")
         .setColor(0xff66cc)
         .setDescription(`
 1️⃣ Get Key
 2️⃣ Redeem
 3️⃣ Use Script
-
-📌 วิธีใช้
-1. กด Get Key
-2. Redeem
-3. ใช้งาน
 `);
 
       const row = new ActionRowBuilder().addComponents(
@@ -200,15 +196,12 @@ client.on(Events.InteractionCreate, async interaction => {
       });
     }
 
-    /* ===== FREEKEY ===== */
+    /* FREEKEY */
 
     if (interaction.commandName === "freekey") {
 
       if (interaction.user.id !== OWNER_ID)
-        return interaction.reply({
-          content: "❌ Owner Only",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ Owner Only", ephemeral: true });
 
       const menu = new StringSelectMenuBuilder()
         .setCustomId("free_select")
@@ -221,27 +214,28 @@ client.on(Events.InteractionCreate, async interaction => {
         ]);
 
       return interaction.reply({
-        content: "🎁 Select Free Key Duration",
-        components: [
-          new ActionRowBuilder().addComponents(menu)
-        ],
+        content: "🎁 Select Duration",
+        components: [new ActionRowBuilder().addComponents(menu)],
         ephemeral: true
       });
     }
 
-    /* ===== PREMIUM ===== */
+    /* PREMIUM */
 
     if (interaction.commandName === "premiumkey") {
 
       if (interaction.user.id !== OWNER_ID)
-        return interaction.reply({
-          content: "❌ Owner Only",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ Owner Only", ephemeral: true });
 
       const modal = new ModalBuilder()
         .setCustomId("premium_modal")
         .setTitle("Create Premium Key");
+
+      const prefix = new TextInputBuilder()
+        .setCustomId("prefix")
+        .setLabel("Prefix (VIP / PRO / PREMIUM)")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
       const amount = new TextInputBuilder()
         .setCustomId("amount")
@@ -262,6 +256,7 @@ client.on(Events.InteractionCreate, async interaction => {
         .setRequired(true);
 
       modal.addComponents(
+        new ActionRowBuilder().addComponents(prefix),
         new ActionRowBuilder().addComponents(amount),
         new ActionRowBuilder().addComponents(time),
         new ActionRowBuilder().addComponents(unit)
@@ -303,6 +298,7 @@ client.on(Events.InteractionCreate, async interaction => {
           redeemed: false,
 
           user: null,
+          username: null,
 
           start: null,
           expire: null,
@@ -319,7 +315,7 @@ client.on(Events.InteractionCreate, async interaction => {
       saveDB(db);
 
       await interaction.update({
-        content: "✅ Free Keys Created",
+        content: "✅ Created",
         components: []
       });
 
@@ -337,15 +333,12 @@ client.on(Events.InteractionCreate, async interaction => {
     let db = loadDB();
     let uid = interaction.user.id;
 
-    /* ===== GETKEY ===== */
+    /* GETKEY */
 
     if (interaction.customId === "getkey") {
 
       if (hasActive(db, uid))
-        return interaction.reply({
-          content: "❌ You still have active key",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ You still have active key", ephemeral: true });
 
       let token = genKey("TOKEN");
 
@@ -354,6 +347,8 @@ client.on(Events.InteractionCreate, async interaction => {
         type: "token",
 
         user: uid,
+        username: interaction.user.username,
+
         redeemed: false,
 
         start: null,
@@ -367,33 +362,26 @@ client.on(Events.InteractionCreate, async interaction => {
 
       return interaction.reply({
         content: `
-\`\`\`
 🔐 TEMP TOKEN
 
-🇬🇧 Copy this token and redeem to get your real key
-🇹🇭 ให้นำ Token นี้ไป Redeem เพื่อรับคีย์จริง
+🇬🇧 Copy and Redeem
+🇹🇭 นำไป Redeem
 
-━━━━━━━━━━━━━━
-📌 TOKEN:
-${token}
-━━━━━━━━━━━━━━
-\`\`\`
+Token:
+\`${token}\`
 `,
         ephemeral: true
       });
     }
 
-    /* ===== INFO ===== */
+    /* INFO */
 
     if (interaction.customId === "info") {
 
       let d = hasActive(db, uid);
 
       if (!d)
-        return interaction.reply({
-          content: "❌ No Active Key",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ No Active Key", ephemeral: true });
 
       let left = d.expire
         ? Math.floor((d.expire - Date.now()) / 1000)
@@ -401,26 +389,19 @@ ${token}
 
       return interaction.reply({
         content: `
-\`\`\`
-📊 KEY INFO
-
-Key: ${d.key}
+Key: \`${d.key}\`
 Time: ${left ? left + "s" : "∞"}
-\`\`\`
 `,
         ephemeral: true
       });
     }
 
-    /* ===== REDEEM ===== */
+    /* REDEEM */
 
     if (interaction.customId === "redeem") {
 
       if (hasActive(db, uid))
-        return interaction.reply({
-          content: "❌ Wait until expired",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ Wait until expired", ephemeral: true });
 
       const modal = new ModalBuilder()
         .setCustomId("redeem_modal")
@@ -446,32 +427,21 @@ Time: ${left ? left + "s" : "∞"}
 
     let db = loadDB();
 
-    /* ===== REDEEM ===== */
+    /* REDEEM */
 
     if (interaction.customId === "redeem_modal") {
 
-      let token =
-        interaction.fields.getTextInputValue("token");
+      let token = interaction.fields.getTextInputValue("token");
 
-      let t = db.find(
-        k => k.key === token && k.type === "token"
-      );
+      let t = db.find(k => k.key === token && k.type === "token");
 
       if (!t)
-        return interaction.reply({
-          content: "❌ Invalid Token",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ Invalid Token", ephemeral: true });
 
-      let free = db.find(
-        k => k.type === "free" && k.temp
-      );
+      let free = db.find(k => k.type === "free" && k.temp);
 
       if (!free)
-        return interaction.reply({
-          content: "❌ No Free Key",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ No Free Key", ephemeral: true });
 
       let now = Date.now();
 
@@ -479,52 +449,48 @@ Time: ${left ? left + "s" : "∞"}
       free.redeemed = true;
 
       free.user = interaction.user.id;
+      free.username = interaction.user.username;
+
       free.start = now;
-      free.expire =
-        now + free.hours * 3600000;
+      free.expire = now + free.hours * 3600000;
 
       db.splice(db.indexOf(t), 1);
 
       saveDB(db);
 
       const msg = `
-\`\`\`
 🎉 FREE KEY
 
-User: ${interaction.user.username}
-Key : ${free.key}
-Time: ${free.hours} Hours
+👤 ${interaction.user.username}
+🔑 \`${free.key}\`
+⏳ ${free.hours}h
 
-🇬🇧 You can use it now!
-🇹🇭 ใช้งานได้ทันทีนะคะ 💖
-\`\`\`
+🇬🇧 Use it now!
+🇹🇭 ใช้งานได้ทันที 💖
 `;
 
-      /* DM */
       try {
         await interaction.user.send(msg);
       } catch {}
 
-      /* CHANNEL (PRIVATE) */
       await interaction.reply({
         content: msg,
         ephemeral: true
       });
     }
 
-    /* ===== PREMIUM ===== */
+    /* PREMIUM */
 
     if (interaction.customId === "premium_modal") {
 
       if (interaction.user.id !== OWNER_ID)
-        return interaction.reply({
-          content: "❌ Owner Only",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ Owner Only", ephemeral: true });
 
-      const amount = Number(
-        interaction.fields.getTextInputValue("amount")
-      );
+      const prefix =
+        interaction.fields.getTextInputValue("prefix").toUpperCase();
+
+      const amount =
+        Number(interaction.fields.getTextInputValue("amount"));
 
       const time =
         interaction.fields.getTextInputValue("time");
@@ -533,10 +499,7 @@ Time: ${free.hours} Hours
         interaction.fields.getTextInputValue("unit");
 
       if (amount < 1 || amount > 10)
-        return interaction.reply({
-          content: "❌ Amount 1-10 only",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "❌ Amount 1-10 only", ephemeral: true });
 
       let ms = parseTime(time, unit);
       let now = Date.now();
@@ -545,7 +508,7 @@ Time: ${free.hours} Hours
 
       for (let i = 0; i < amount; i++) {
 
-        let k = genKey("PREMIUM");
+        let k = genKey(prefix);
 
         db.push({
           key: k,
@@ -554,6 +517,7 @@ Time: ${free.hours} Hours
           redeemed: true,
 
           user: null,
+          username: null,
 
           start: now,
           expire: ms ? now + ms : null,
@@ -568,13 +532,11 @@ Time: ${free.hours} Hours
       saveDB(db);
 
       const msg = `
-\`\`\`
 💎 PREMIUM KEYS
 
-${keys.join("\n")}
+${keys.map(k=>`\`${k}\``).join("\n")}
 
 Keep it safe 💖
-\`\`\`
 `;
 
       try {
@@ -582,13 +544,9 @@ Keep it safe 💖
       } catch {}
 
       await interaction.reply({
-        content: "✅ Sent to DM (5 min)",
+        content: msg,
         ephemeral: true
       });
-
-      setTimeout(() => {
-        interaction.deleteReply().catch(() => {});
-      }, 300000);
     }
   }
 });
@@ -640,6 +598,7 @@ app.get("/api/dashboard", (req, res) => {
     type: k.type,
 
     user: k.user,
+    username: k.username,
 
     used: k.redeemed,
 
@@ -651,9 +610,7 @@ app.get("/api/dashboard", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "public/dashboard.html")
-  );
+  res.sendFile(path.join(__dirname, "public/dashboard.html"));
 });
 
 app.listen(PORT, () => {
