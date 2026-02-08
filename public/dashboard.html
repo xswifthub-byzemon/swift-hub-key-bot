@@ -22,6 +22,15 @@ body{
   margin:0;
   background:#000;
   color:#fff;
+  overflow:hidden;
+}
+
+/* PARTICLE BG */
+
+#particle{
+  position:fixed;
+  inset:0;
+  z-index:-2;
 }
 
 /* LOGIN */
@@ -34,6 +43,7 @@ body{
   justify-content:center;
   align-items:center;
   z-index:999;
+  transition:.4s;
 }
 
 .login-panel{
@@ -42,6 +52,24 @@ body{
   width:300px;
   text-align:center;
   box-shadow:0 0 20px #00ffff;
+  animation:pop .6s;
+}
+
+@keyframes pop{
+  from{transform:scale(.7);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+.shake{
+  animation:shake .3s;
+}
+
+@keyframes shake{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-6px)}
+  50%{transform:translateX(6px)}
+  75%{transform:translateX(-6px)}
+  100%{transform:translateX(0)}
 }
 
 .login-panel h2{
@@ -72,22 +100,6 @@ body{
   color:#000;
 }
 
-/* BG */
-
-#bg{
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  opacity:.15;
-  background:linear-gradient(180deg,#111,#000,#111);
-  animation:bgmove 15s linear infinite;
-}
-
-@keyframes bgmove{
-  from{background-position:0%}
-  to{background-position:200%}
-}
-
 /* HEADER */
 
 header{
@@ -111,6 +123,8 @@ header{
 
 .back{display:none}
 
+/* TITLE EFFECT */
+
 .title{
   font-family:"Anton",sans-serif;
   font-size:24px;
@@ -122,14 +136,20 @@ header{
   -webkit-background-clip:text;
   color:transparent;
 
-  animation:titleFlow 4s linear infinite;
+  animation:titleFlow 4s linear infinite,
+           glow 2s ease-in-out infinite alternate;
 
-  text-shadow:0 0 15px #fff;
+  text-shadow:0 0 20px #ff0040;
 }
 
 @keyframes titleFlow{
   from{background-position:0%}
   to{background-position:300%}
+}
+
+@keyframes glow{
+  from{text-shadow:0 0 10px #ff0040}
+  to{text-shadow:0 0 30px #fff}
 }
 
 /* PANEL */
@@ -154,16 +174,28 @@ header{
   background:#000;
   color:#fff;
   cursor:pointer;
+  transition:.2s;
 }
 
 .panel-btn:hover{
   box-shadow:0 0 15px #00ffff;
+  transform:scale(1.08);
 }
 
-/* PAGE */
+/* PAGE ANIMATION */
 
-.page{display:none}
-.page.active{display:block}
+.page{
+  display:none;
+  opacity:0;
+  transform:translateY(20px);
+  transition:.4s;
+}
+
+.page.active{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+}
 
 /* STATS */
 
@@ -272,11 +304,13 @@ footer{
 
 <body>
 
+<canvas id="particle"></canvas>
+
 <!-- LOGIN -->
 
 <div id="loginBox">
 
-  <div class="login-panel">
+  <div class="login-panel" id="loginPanel">
 
     <h2>🔒 Swift Hub Login</h2>
 
@@ -289,8 +323,6 @@ footer{
   </div>
 
 </div>
-
-<div id="bg"></div>
 
 <!-- PANEL -->
 
@@ -409,24 +441,85 @@ footer{
 
 <script>
 
+/* PARTICLE */
+
+const canvas=document.getElementById("particle");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+  canvas.width=innerWidth;
+  canvas.height=innerHeight;
+}
+resize();
+onresize=resize;
+
+let dots=[];
+
+for(let i=0;i<80;i++){
+  dots.push({
+    x:Math.random()*innerWidth,
+    y:Math.random()*innerHeight,
+    r:Math.random()*2+1,
+    dx:(Math.random()-.5),
+    dy:(Math.random()-.5)
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  dots.forEach(d=>{
+    d.x+=d.dx;
+    d.y+=d.dy;
+
+    if(d.x<0||d.x>canvas.width) d.dx*=-1;
+    if(d.y<0||d.y>canvas.height) d.dy*=-1;
+
+    ctx.beginPath();
+    ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+    ctx.fillStyle="#00ffff55";
+    ctx.fill();
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+
 /* PASSWORD */
 
 const PASS_KEY="swift_password";
 const LOGIN_KEY="swift_login";
 
-let PASSWORD=localStorage.getItem(PASS_KEY) || "ZM Swift HUB 0460";
+let PASSWORD=localStorage.getItem(PASS_KEY)||"ZM Swift HUB 0460";
 
 /* LOGIN */
 
 function login(){
 
   if(pass.value!==PASSWORD){
+
+    loginPanel.classList.add("shake");
+
+    setTimeout(()=>{
+      loginPanel.classList.remove("shake");
+    },300);
+
     loginMsg.textContent="❌ Wrong Password";
     return;
   }
 
-  localStorage.setItem(LOGIN_KEY,"1");
-  loginBox.style.display="none";
+  loginMsg.textContent="✅ Success";
+  loginMsg.style.color="#00ff88";
+
+  setTimeout(()=>{
+    localStorage.setItem(LOGIN_KEY,"1");
+    loginBox.style.opacity=0;
+
+    setTimeout(()=>{
+      loginBox.style.display="none";
+    },400);
+
+  },500);
 }
 
 function checkLogin(){
@@ -435,7 +528,6 @@ function checkLogin(){
     loginBox.style.display="none";
   }
 }
-
 checkLogin();
 
 /* LOGOUT */
@@ -478,7 +570,9 @@ function closePanel(){panel.style.display="none"}
 /* PAGE */
 
 function hideAll(){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p=>{
+    p.classList.remove("active");
+  });
 }
 
 function openHome(){
@@ -528,12 +622,12 @@ function copyKey(k){
   alert("✅ Copied");
 }
 
-/* COUNT ELEMENT */
+/* COUNT */
 
 const freeCountEl=document.getElementById("freeCount");
 const premiumCountEl=document.getElementById("premiumCount");
 
-/* LOAD DATA */
+/* LOAD */
 
 async function load(){
 
