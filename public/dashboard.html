@@ -11,6 +11,8 @@
 
 <style>
 
+/* GLOBAL */
+
 *{
   box-sizing:border-box;
   font-family:"Orbitron",sans-serif;
@@ -163,39 +165,6 @@ header{
 .page{display:none}
 .page.active{display:block}
 
-/* SETTINGS */
-
-.setting-box{
-  max-width:350px;
-  margin:auto;
-  border:2px solid #fff;
-  padding:15px;
-}
-
-.setting-box input{
-  width:100%;
-  padding:7px;
-  margin:5px 0;
-  background:#000;
-  border:1px solid #fff;
-  color:#fff;
-}
-
-.setting-box button{
-  width:100%;
-  padding:8px;
-  margin-top:8px;
-  background:#000;
-  border:1px solid #00ffff;
-  color:#00ffff;
-  cursor:pointer;
-}
-
-.setting-box button:hover{
-  background:#00ffff;
-  color:#000;
-}
-
 /* STATS */
 
 .stats{
@@ -235,6 +204,18 @@ th,td{
   text-align:center;
 }
 
+td{
+  word-break:break-all;
+}
+
+/* STATUS */
+
+.free{color:#00ff88}
+.using{color:#ffe600}
+.expired{color:#ff3333}
+
+/* COPY */
+
 .copy-btn{
   cursor:pointer;
   color:#00ffff;
@@ -243,6 +224,41 @@ th,td{
 .copy-btn:hover{
   text-shadow:0 0 8px #00ffff;
 }
+
+/* SETTINGS */
+
+.setting-box{
+  max-width:350px;
+  margin:auto;
+  border:2px solid #fff;
+  padding:15px;
+}
+
+.setting-box input{
+  width:100%;
+  padding:7px;
+  margin:5px 0;
+  background:#000;
+  border:1px solid #fff;
+  color:#fff;
+}
+
+.setting-box button{
+  width:100%;
+  padding:8px;
+  margin-top:8px;
+  background:#000;
+  border:1px solid #00ffff;
+  color:#00ffff;
+  cursor:pointer;
+}
+
+.setting-box button:hover{
+  background:#00ffff;
+  color:#000;
+}
+
+/* FOOTER */
 
 footer{
   text-align:center;
@@ -309,6 +325,26 @@ footer{
 
   </div>
 
+  <div class="container">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Key</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+
+      <tbody id="freeData"></tbody>
+
+    </table>
+
+  </div>
+
 </div>
 
 <!-- PREMIUM -->
@@ -316,7 +352,25 @@ footer{
 <div id="testPage" class="page">
 
   <div class="container">
+
     <h3>💎 Premium Keys</h3>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Key</th>
+          <th>Copy</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+
+      <tbody id="testData"></tbody>
+
+    </table>
+
   </div>
 
 </div>
@@ -355,7 +409,7 @@ footer{
 
 <script>
 
-/* PASSWORD SYSTEM */
+/* PASSWORD */
 
 const PASS_KEY="swift_password";
 const LOGIN_KEY="swift_login";
@@ -387,7 +441,6 @@ checkLogin();
 /* LOGOUT */
 
 function logout(){
-
   localStorage.removeItem(LOGIN_KEY);
   location.reload();
 }
@@ -401,11 +454,6 @@ function changePassword(){
     return;
   }
 
-  if(newPass.value.length<4){
-    setMsg.textContent="❌ Password too short";
-    return;
-  }
-
   if(newPass.value!==rePass.value){
     setMsg.textContent="❌ Not match";
     return;
@@ -415,7 +463,7 @@ function changePassword(){
   localStorage.setItem(PASS_KEY,PASSWORD);
 
   setMsg.style.color="#00ff88";
-  setMsg.textContent="✅ Password Changed";
+  setMsg.textContent="✅ Changed";
 
   oldPass.value="";
   newPass.value="";
@@ -458,6 +506,106 @@ function openSettings(){
 }
 
 function goBack(){openHome()}
+
+/* TIME */
+
+function format(ms){
+
+  if(!ms||ms<=0) return "00:00:00";
+
+  let s=Math.floor(ms/1000);
+  let h=Math.floor(s/3600);
+  let m=Math.floor((s%3600)/60);
+  let se=s%60;
+
+  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${se.toString().padStart(2,"0")}`;
+}
+
+/* COPY */
+
+function copyKey(k){
+  navigator.clipboard.writeText(k);
+  alert("✅ Copied");
+}
+
+/* LOAD DATA */
+
+async function load(){
+
+  try{
+
+    const res=await fetch("/api/dashboard");
+    const data=await res.json();
+
+    let freeHTML="",testHTML="";
+    let freeCount=0,premiumCount=0;
+
+    let f=1,t=1;
+
+    data.forEach(k=>{
+
+      let cls="",st="",time="";
+
+      if(!k.used){
+        cls="free";st="🟢";time="FREE";
+      }
+      else if(k.left>0){
+        cls="using";st="🟡";time=format(k.left);
+      }
+      else{
+        cls="expired";st="🔴";time="EXPIRED";
+      }
+
+      /* FREE */
+
+      if(k.type==="free"){
+
+        freeCount++;
+
+        freeHTML+=`
+        <tr>
+          <td>${f++}</td>
+          <td>${k.username||"-"}</td>
+          <td>${k.key}</td>
+          <td class="${cls}">${st}</td>
+          <td>${time}</td>
+        </tr>`;
+      }
+
+      /* PREMIUM */
+
+      if(k.type==="premium"){
+
+        premiumCount++;
+
+        testHTML+=`
+        <tr>
+          <td>${t++}</td>
+          <td>${k.key}</td>
+          <td>
+            <span class="copy-btn" onclick="copyKey('${k.key}')">📋</span>
+          </td>
+          <td class="${cls}">${st}</td>
+          <td>${time}</td>
+        </tr>`;
+      }
+
+    });
+
+    freeData.innerHTML=freeHTML;
+    testData.innerHTML=testHTML;
+
+    freeCount.textContent=freeCount;
+    premiumCount.textContent=premiumCount;
+
+  }catch(e){
+    console.log(e)
+  }
+
+}
+
+load();
+setInterval(load,2000);
 
 </script>
 
