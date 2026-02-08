@@ -11,8 +11,6 @@
 
 <style>
 
-/* GLOBAL */
-
 *{
   box-sizing:border-box;
   font-family:"Orbitron",sans-serif;
@@ -70,12 +68,6 @@ body{
 .login-panel button:hover{
   background:#00ffff;
   color:#000;
-}
-
-.remember{
-  text-align:left;
-  font-size:12px;
-  margin-bottom:10px;
 }
 
 /* BG */
@@ -166,6 +158,44 @@ header{
   box-shadow:0 0 15px #00ffff;
 }
 
+/* PAGE */
+
+.page{display:none}
+.page.active{display:block}
+
+/* SETTINGS */
+
+.setting-box{
+  max-width:350px;
+  margin:auto;
+  border:2px solid #fff;
+  padding:15px;
+}
+
+.setting-box input{
+  width:100%;
+  padding:7px;
+  margin:5px 0;
+  background:#000;
+  border:1px solid #fff;
+  color:#fff;
+}
+
+.setting-box button{
+  width:100%;
+  padding:8px;
+  margin-top:8px;
+  background:#000;
+  border:1px solid #00ffff;
+  color:#00ffff;
+  cursor:pointer;
+}
+
+.setting-box button:hover{
+  background:#00ffff;
+  color:#000;
+}
+
 /* STATS */
 
 .stats{
@@ -205,18 +235,6 @@ th,td{
   text-align:center;
 }
 
-td{
-  word-break:break-all;
-}
-
-/* STATUS */
-
-.free{color:#00ff88}
-.using{color:#ffe600}
-.expired{color:#ff3333}
-
-/* COPY */
-
 .copy-btn{
   cursor:pointer;
   color:#00ffff;
@@ -225,13 +243,6 @@ td{
 .copy-btn:hover{
   text-shadow:0 0 8px #00ffff;
 }
-
-/* PAGE */
-
-.page{display:none}
-.page.active{display:block}
-
-/* FOOTER */
 
 footer{
   text-align:center;
@@ -255,11 +266,6 @@ footer{
 
     <input type="password" id="pass" placeholder="Enter Password">
 
-    <div class="remember">
-      <input type="checkbox" id="remember">
-      Remember 30 Days
-    </div>
-
     <button onclick="login()">LOGIN</button>
 
     <p id="loginMsg" style="color:red;font-size:12px;"></p>
@@ -276,7 +282,7 @@ footer{
 
   <div class="panel-btn" onclick="openHome()">🏠 Free Keys</div>
   <div class="panel-btn" onclick="openTest()">💎 Premium Keys</div>
-  <div class="panel-btn" onclick="openStats()">📊 Statistics</div>
+  <div class="panel-btn" onclick="openSettings()">⚙️ Settings</div>
   <div class="panel-btn" onclick="closePanel()">❌ Close</div>
 
 </div>
@@ -303,26 +309,6 @@ footer{
 
   </div>
 
-  <div class="container">
-
-    <table>
-
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>User</th>
-          <th>Key</th>
-          <th>Status</th>
-          <th>Time</th>
-        </tr>
-      </thead>
-
-      <tbody id="freeData"></tbody>
-
-    </table>
-
-  </div>
-
 </div>
 
 <!-- PREMIUM -->
@@ -330,36 +316,37 @@ footer{
 <div id="testPage" class="page">
 
   <div class="container">
-
     <h3>💎 Premium Keys</h3>
-
-    <table>
-
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Key</th>
-          <th>Copy</th>
-          <th>Status</th>
-          <th>Time</th>
-        </tr>
-      </thead>
-
-      <tbody id="testData"></tbody>
-
-    </table>
-
   </div>
 
 </div>
 
-<!-- STATS -->
+<!-- SETTINGS -->
 
-<div id="statsPage" class="page">
+<div id="settingsPage" class="page">
 
   <div class="container">
-    <h3>📊 Statistics</h3>
-    <p id="statsText"></p>
+
+    <h3>⚙️ Settings</h3>
+
+    <div class="setting-box">
+
+      <button onclick="logout()">🔒 Logout</button>
+
+      <hr style="border:1px solid #333;margin:15px 0">
+
+      <h4>🔁 Change Password</h4>
+
+      <input type="password" id="oldPass" placeholder="Old Password">
+      <input type="password" id="newPass" placeholder="New Password">
+      <input type="password" id="rePass" placeholder="Confirm Password">
+
+      <button onclick="changePassword()">SAVE</button>
+
+      <p id="setMsg" style="font-size:12px;color:red"></p>
+
+    </div>
+
   </div>
 
 </div>
@@ -368,10 +355,14 @@ footer{
 
 <script>
 
-/* LOGIN */
+/* PASSWORD SYSTEM */
 
-const PASSWORD="ZM Swift HUB 0460";
-const KEY="swift_login";
+const PASS_KEY="swift_password";
+const LOGIN_KEY="swift_login";
+
+let PASSWORD=localStorage.getItem(PASS_KEY) || "ZM Swift HUB 0460";
+
+/* LOGIN */
 
 function login(){
 
@@ -380,28 +371,56 @@ function login(){
     return;
   }
 
-  if(remember.checked){
-    localStorage.setItem(KEY,Date.now());
-  }
-
+  localStorage.setItem(LOGIN_KEY,"1");
   loginBox.style.display="none";
 }
 
 function checkLogin(){
 
-  const t=localStorage.getItem(KEY);
-  if(!t) return;
-
-  const day=30*24*60*60*1000;
-
-  if(Date.now()-Number(t)<day){
+  if(localStorage.getItem(LOGIN_KEY)){
     loginBox.style.display="none";
-  }else{
-    localStorage.removeItem(KEY);
   }
 }
 
 checkLogin();
+
+/* LOGOUT */
+
+function logout(){
+
+  localStorage.removeItem(LOGIN_KEY);
+  location.reload();
+}
+
+/* CHANGE PASSWORD */
+
+function changePassword(){
+
+  if(oldPass.value!==PASSWORD){
+    setMsg.textContent="❌ Old password wrong";
+    return;
+  }
+
+  if(newPass.value.length<4){
+    setMsg.textContent="❌ Password too short";
+    return;
+  }
+
+  if(newPass.value!==rePass.value){
+    setMsg.textContent="❌ Not match";
+    return;
+  }
+
+  PASSWORD=newPass.value;
+  localStorage.setItem(PASS_KEY,PASSWORD);
+
+  setMsg.style.color="#00ff88";
+  setMsg.textContent="✅ Password Changed";
+
+  oldPass.value="";
+  newPass.value="";
+  rePass.value="";
+}
 
 /* PANEL */
 
@@ -430,121 +449,15 @@ function openTest(){
   closePanel();
 }
 
-function openStats(){
+function openSettings(){
   hideAll();
-  statsPage.classList.add("active");
+  settingsPage.classList.add("active");
   backBtn.style.display="block";
   menuBtn.style.display="none";
   closePanel();
 }
 
 function goBack(){openHome()}
-
-/* TIME */
-
-function format(ms){
-
-  if(!ms||ms<=0) return "00:00:00";
-
-  let s=Math.floor(ms/1000);
-  let h=Math.floor(s/3600);
-  let m=Math.floor((s%3600)/60);
-  let se=s%60;
-
-  return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${se.toString().padStart(2,"0")}`;
-}
-
-/* COPY */
-
-function copyKey(k){
-  navigator.clipboard.writeText(k);
-  alert("✅ Copied");
-}
-
-/* LOAD */
-
-async function load(){
-
-  try{
-
-    const res=await fetch("/api/dashboard");
-    const data=await res.json();
-
-    let freeHTML="",testHTML="";
-    let freeCount=0,premiumCount=0;
-
-    let f=1,t=1;
-
-    data.forEach(k=>{
-
-      let cls="",st="",time="";
-
-      if(!k.used){
-        cls="free";st="🟢";time="FREE";
-      }
-      else if(k.left>0){
-        cls="using";st="🟡";time=format(k.left);
-      }
-      else{
-        cls="expired";st="🔴";time="EXPIRED";
-      }
-
-      /* FREE */
-
-      if(k.type==="free"){
-
-        freeCount++;
-
-        freeHTML+=`
-        <tr>
-          <td>${f++}</td>
-          <td>${k.username||"-"}</td>
-          <td>${k.key}</td>
-          <td class="${cls}">${st}</td>
-          <td>${time}</td>
-        </tr>`;
-      }
-
-      /* PREMIUM */
-
-      if(k.type==="premium"){
-
-        premiumCount++;
-
-        testHTML+=`
-        <tr>
-          <td>${t++}</td>
-          <td>${k.key}</td>
-          <td>
-            <span class="copy-btn" onclick="copyKey('${k.key}')">📋</span>
-          </td>
-          <td class="${cls}">${st}</td>
-          <td>${time}</td>
-        </tr>`;
-      }
-
-    });
-
-    freeData.innerHTML=freeHTML;
-    testData.innerHTML=testHTML;
-
-    freeCountEl.textContent=freeCount;
-    premiumCountEl.textContent=premiumCount;
-
-    statsText.textContent=
-      `Premium: ${premiumCount} | Free: ${freeCount}`;
-
-  }catch(e){
-    console.log(e)
-  }
-
-}
-
-const freeCountEl=document.getElementById("freeCount");
-const premiumCountEl=document.getElementById("premiumCount");
-
-load();
-setInterval(load,2000);
 
 </script>
 
