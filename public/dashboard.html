@@ -191,6 +191,20 @@ td{
   text-shadow:0 0 10px #ff3333;
 }
 
+/* ============ COPY BTN ============ */
+
+.copy-btn{
+  margin-left:6px;
+  cursor:pointer;
+  color:#00ffff;
+  font-size:14px;
+}
+
+.copy-btn:hover{
+  color:#fff;
+  text-shadow:0 0 8px #00ffff;
+}
+
 /* ============ PAGES ============ */
 
 .page{
@@ -223,7 +237,7 @@ footer{
 
   <div class="panel-btn" onclick="openHome()">🏠 Free Keys</div>
 
-  <div class="panel-btn" onclick="openTest()">🧪 Test Keys</div>
+  <div class="panel-btn" onclick="openTest()">💎 Premium Keys</div>
 
   <div class="panel-btn" onclick="openStats()">📊 Statistics</div>
 
@@ -277,13 +291,13 @@ footer{
 
 </div>
 
-<!-- TEST PAGE -->
+<!-- PREMIUM PAGE -->
 
 <div id="testPage" class="page">
 
   <div class="container">
 
-    <h3>🧪 Test Keys</h3>
+    <h3>💎 Premium Keys</h3>
 
     <table>
 
@@ -291,6 +305,7 @@ footer{
         <tr>
           <th>#</th>
           <th>Key</th>
+          <th>Copy</th>
           <th>Status</th>
           <th>Time</th>
         </tr>
@@ -401,6 +416,18 @@ function format(ms){
     .toString().padStart(2,"0")}`;
 }
 
+/* ============ COPY ============ */
+
+function copyKey(key){
+
+  navigator.clipboard.writeText(key).then(()=>{
+
+    alert("✅ Copied: "+key);
+
+  });
+
+}
+
 /* ============ DATA ============ */
 
 async function load(){
@@ -415,7 +442,10 @@ async function load(){
 
     let total=0,free=0,used=0;
 
-    data.forEach((k,i)=>{
+    let idxFree=1;
+    let idxTest=1;
+
+    data.forEach((k)=>{
 
       let cls="",st="",time="";
 
@@ -449,8 +479,8 @@ async function load(){
 
         freeHTML+=`
         <tr>
-          <td>${free+used}</td>
-          <td>${k.user||"-"}</td>
+          <td>${idxFree++}</td>
+          <td>${k.username||"-"}</td>
           <td>${k.key}</td>
           <td class="status ${cls}">${st}</td>
           <td>${time}</td>
@@ -458,14 +488,19 @@ async function load(){
         `;
       }
 
-      /* TEST PAGE */
+      /* PREMIUM PAGE */
 
       if(k.type==="test"){
 
         testHTML+=`
         <tr>
-          <td>${i+1}</td>
+          <td>${idxTest++}</td>
           <td>${k.key}</td>
+          <td>
+            <span class="copy-btn" onclick="copyKey('${k.key}')">
+              📋 Copy
+            </span>
+          </td>
           <td class="status ${cls}">${st}</td>
           <td>${time}</td>
         </tr>
