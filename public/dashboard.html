@@ -170,20 +170,20 @@ header{
 
 .stats{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
   padding:10px;
 }
 
 .stat{
   background:#050505;
   border:2px solid #fff;
-  padding:8px;
+  padding:10px;
   text-align:center;
 }
 
 .stat span{
-  font-size:22px;
+  font-size:24px;
   font-weight:700;
 }
 
@@ -226,7 +226,7 @@ td{
   text-shadow:0 0 8px #00ffff;
 }
 
-/* PAGES */
+/* PAGE */
 
 .page{display:none}
 .page.active{display:block}
@@ -298,9 +298,8 @@ footer{
 
   <div class="stats">
 
-    <div class="stat">Total<br><span id="total">0</span></div>
-    <div class="stat">Free<br><span id="free">0</span></div>
-    <div class="stat">Used<br><span id="used">0</span></div>
+    <div class="stat">Premium<br><span id="premiumCount">0</span></div>
+    <div class="stat">Free<br><span id="freeCount">0</span></div>
 
   </div>
 
@@ -472,31 +471,30 @@ async function load(){
     const data=await res.json();
 
     let freeHTML="",testHTML="";
-    let total=0,free=0,used=0;
+    let freeCount=0,premiumCount=0;
+
     let f=1,t=1;
 
     data.forEach(k=>{
 
       let cls="",st="",time="";
 
-      if(k.type==="free" || k.type==="premium"){
-
-        total++;
-
-        if(!k.used){
-          cls="free";st="🟢";time="FREE";free++;
-        }
-        else if(k.left>0){
-          cls="using";st="🟡";time=format(k.left);used++;
-        }
-        else{
-          cls="expired";st="🔴";time="EXPIRED";used++;
-        }
+      if(!k.used){
+        cls="free";st="🟢";time="FREE";
+      }
+      else if(k.left>0){
+        cls="using";st="🟡";time=format(k.left);
+      }
+      else{
+        cls="expired";st="🔴";time="EXPIRED";
       }
 
       /* FREE */
 
       if(k.type==="free"){
+
+        freeCount++;
+
         freeHTML+=`
         <tr>
           <td>${f++}</td>
@@ -510,11 +508,16 @@ async function load(){
       /* PREMIUM */
 
       if(k.type==="premium"){
+
+        premiumCount++;
+
         testHTML+=`
         <tr>
           <td>${t++}</td>
           <td>${k.key}</td>
-          <td><span class="copy-btn" onclick="copyKey('${k.key}')">📋</span></td>
+          <td>
+            <span class="copy-btn" onclick="copyKey('${k.key}')">📋</span>
+          </td>
           <td class="${cls}">${st}</td>
           <td>${time}</td>
         </tr>`;
@@ -525,18 +528,20 @@ async function load(){
     freeData.innerHTML=freeHTML;
     testData.innerHTML=testHTML;
 
-    totalEl.textContent=total;
-    freeEl.textContent=free;
-    usedEl.textContent=used;
+    freeCountEl.textContent=freeCount;
+    premiumCountEl.textContent=premiumCount;
 
     statsText.textContent=
-      `Total: ${total} | Free: ${free} | Used: ${used}`;
+      `Premium: ${premiumCount} | Free: ${freeCount}`;
 
   }catch(e){
     console.log(e)
   }
 
 }
+
+const freeCountEl=document.getElementById("freeCount");
+const premiumCountEl=document.getElementById("premiumCount");
 
 load();
 setInterval(load,2000);
