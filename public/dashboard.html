@@ -25,12 +25,65 @@ body{
   overflow:hidden;
 }
 
-/* PARTICLE BG */
+/* ANIMAL BG */
+
+#animalLayer{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+.animal{
+  position:absolute;
+  font-size:28px;
+  opacity:.9;
+  animation:fadeOut linear forwards;
+}
+
+@keyframes fadeOut{
+  from{opacity:1}
+  to{opacity:0}
+}
+
+/* PARTICLE */
 
 #particle{
   position:fixed;
   inset:0;
   z-index:-2;
+}
+
+/* TEXT ANIMATION */
+
+.wave{
+  animation:wave 2s ease-in-out infinite;
+}
+
+@keyframes wave{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+  100%{transform:translateY(0)}
+}
+
+.float{
+  animation:float 3s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+  100%{transform:translateY(0)}
+}
+
+.pop{
+  animation:popNum .6s;
+}
+
+@keyframes popNum{
+  from{transform:scale(1.6)}
+  to{transform:scale(1)}
 }
 
 /* LOGIN */
@@ -52,11 +105,11 @@ body{
   width:300px;
   text-align:center;
   box-shadow:0 0 20px #00ffff;
-  animation:pop .6s;
+  animation:popIn .6s;
 }
 
-@keyframes pop{
-  from{transform:scale(.7);opacity:0}
+@keyframes popIn{
+  from{transform:scale(.6);opacity:0}
   to{transform:scale(1);opacity:1}
 }
 
@@ -123,7 +176,7 @@ header{
 
 .back{display:none}
 
-/* TITLE EFFECT */
+/* TITLE */
 
 .title{
   font-family:"Anton",sans-serif;
@@ -137,7 +190,8 @@ header{
   color:transparent;
 
   animation:titleFlow 4s linear infinite,
-           glow 2s ease-in-out infinite alternate;
+           glow 2s ease-in-out infinite alternate,
+           wave 2s infinite;
 
   text-shadow:0 0 20px #ff0040;
 }
@@ -179,15 +233,15 @@ header{
 
 .panel-btn:hover{
   box-shadow:0 0 15px #00ffff;
-  transform:scale(1.08);
+  transform:scale(1.15) rotate(1deg);
 }
 
-/* PAGE ANIMATION */
+/* PAGE */
 
 .page{
   display:none;
   opacity:0;
-  transform:translateY(20px);
+  transform:translateY(30px);
   transition:.4s;
 }
 
@@ -216,6 +270,7 @@ header{
 .stat span{
   font-size:24px;
   font-weight:700;
+  display:inline-block;
 }
 
 /* TABLE */
@@ -234,6 +289,10 @@ th,td{
   padding:6px;
   font-size:12px;
   text-align:center;
+}
+
+th{
+  animation:wave 3s infinite;
 }
 
 td{
@@ -255,6 +314,7 @@ td{
 
 .copy-btn:hover{
   text-shadow:0 0 8px #00ffff;
+  transform:scale(1.3);
 }
 
 /* SETTINGS */
@@ -288,6 +348,7 @@ td{
 .setting-box button:hover{
   background:#00ffff;
   color:#000;
+  transform:scale(1.1);
 }
 
 /* FOOTER */
@@ -305,6 +366,7 @@ footer{
 <body>
 
 <canvas id="particle"></canvas>
+<div id="animalLayer"></div>
 
 <!-- LOGIN -->
 
@@ -312,7 +374,7 @@ footer{
 
   <div class="login-panel" id="loginPanel">
 
-    <h2>🔒 Swift Hub Login</h2>
+    <h2 class="wave">🔒 Swift Hub Login</h2>
 
     <input type="password" id="pass" placeholder="Enter Password">
 
@@ -328,10 +390,10 @@ footer{
 
 <div id="panel">
 
-  <div class="panel-btn" onclick="openHome()">🏠 Free Keys</div>
-  <div class="panel-btn" onclick="openTest()">💎 Premium Keys</div>
-  <div class="panel-btn" onclick="openSettings()">⚙️ Settings</div>
-  <div class="panel-btn" onclick="closePanel()">❌ Close</div>
+  <div class="panel-btn float" onclick="openHome()">🏠 Free Keys</div>
+  <div class="panel-btn float" onclick="openTest()">💎 Premium Keys</div>
+  <div class="panel-btn float" onclick="openSettings()">⚙️ Settings</div>
+  <div class="panel-btn float" onclick="closePanel()">❌ Close</div>
 
 </div>
 
@@ -352,8 +414,8 @@ footer{
 
   <div class="stats">
 
-    <div class="stat">Premium<br><span id="premiumCount">0</span></div>
-    <div class="stat">Free<br><span id="freeCount">0</span></div>
+    <div class="stat float">Premium<br><span id="premiumCount">0</span></div>
+    <div class="stat float">Free<br><span id="freeCount">0</span></div>
 
   </div>
 
@@ -385,7 +447,7 @@ footer{
 
   <div class="container">
 
-    <h3>💎 Premium Keys</h3>
+    <h3 class="wave">💎 Premium Keys</h3>
 
     <table>
 
@@ -413,7 +475,7 @@ footer{
 
   <div class="container">
 
-    <h3>⚙️ Settings</h3>
+    <h3 class="wave">⚙️ Settings</h3>
 
     <div class="setting-box">
 
@@ -421,7 +483,7 @@ footer{
 
       <hr style="border:1px solid #333;margin:15px 0">
 
-      <h4>🔁 Change Password</h4>
+      <h4 class="wave">🔁 Change Password</h4>
 
       <input type="password" id="oldPass" placeholder="Old Password">
       <input type="password" id="newPass" placeholder="New Password">
@@ -484,6 +546,83 @@ function draw(){
   requestAnimationFrame(draw);
 }
 draw();
+
+/* ANIMAL SYSTEM */
+
+const animals=[
+"🐱","🐶","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔",
+"🐧","🐦","🐤","🐺","🐗","🐴","🦄","🐝","🦋","🐢","🐍","🦖","🦕","🐙","🦑",
+"🦀","🐡","🐠","🐳","🐬","🦈"
+];
+
+const layer=document.getElementById("animalLayer");
+
+function spawnAnimal(){
+
+  if(layer.children.length>30) return;
+
+  const a=document.createElement("div");
+  a.className="animal";
+
+  a.textContent=animals[Math.floor(Math.random()*animals.length)];
+
+  const dir=Math.floor(Math.random()*4);
+
+  let x=0,y=0,dx=0,dy=0;
+
+  const w=innerWidth;
+  const h=innerHeight;
+
+  const speed=Math.random()*1.5+0.5;
+  const life=Math.random()*5000+5000;
+
+  if(dir===0){ // left to right
+    x=-50; y=Math.random()*h;
+    dx=speed; dy=0;
+  }
+  if(dir===1){ // right to left
+    x=w+50; y=Math.random()*h;
+    dx=-speed; dy=0;
+  }
+  if(dir===2){ // top to bottom
+    x=Math.random()*w; y=-50;
+    dx=0; dy=speed;
+  }
+  if(dir===3){ // bottom to top
+    x=Math.random()*w; y=h+50;
+    dx=0; dy=-speed;
+  }
+
+  a.style.left=x+"px";
+  a.style.top=y+"px";
+  a.style.animationDuration=life+"ms";
+
+  layer.appendChild(a);
+
+  let start=Date.now();
+
+  function move(){
+
+    const t=Date.now()-start;
+
+    if(t>life){
+      a.remove();
+      return;
+    }
+
+    x+=dx*3;
+    y+=dy*3;
+
+    a.style.left=x+"px";
+    a.style.top=y+"px";
+
+    requestAnimationFrame(move);
+  }
+
+  move();
+}
+
+setInterval(spawnAnimal,1500);
 
 /* PASSWORD */
 
@@ -692,6 +831,14 @@ async function load(){
 
     freeCountEl.textContent=freeCount;
     premiumCountEl.textContent=premiumCount;
+
+    freeCountEl.classList.add("pop");
+    premiumCountEl.classList.add("pop");
+
+    setTimeout(()=>{
+      freeCountEl.classList.remove("pop");
+      premiumCountEl.classList.remove("pop");
+    },600);
 
   }catch(e){
     console.log(e)
