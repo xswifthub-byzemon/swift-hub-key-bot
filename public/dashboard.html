@@ -11,7 +11,7 @@
 
 <style>
 
-/* ============ GLOBAL ============ */
+/* GLOBAL */
 
 *{
   box-sizing:border-box;
@@ -24,7 +24,7 @@ body{
   color:#fff;
 }
 
-/* ============ LOGIN ============ */
+/* LOGIN */
 
 #loginBox{
   position:fixed;
@@ -78,7 +78,7 @@ body{
   margin-bottom:10px;
 }
 
-/* ============ BG ============ */
+/* BG */
 
 #bg{
   position:fixed;
@@ -94,7 +94,7 @@ body{
   to{background-position:200%}
 }
 
-/* ============ HEADER ============ */
+/* HEADER */
 
 header{
   display:flex;
@@ -138,7 +138,7 @@ header{
   to{background-position:300%}
 }
 
-/* ============ PANEL ============ */
+/* PANEL */
 
 #panel{
   position:fixed;
@@ -166,7 +166,7 @@ header{
   box-shadow:0 0 15px #00ffff;
 }
 
-/* ============ STATS ============ */
+/* STATS */
 
 .stats{
   display:grid;
@@ -187,7 +187,7 @@ header{
   font-weight:700;
 }
 
-/* ============ TABLE ============ */
+/* TABLE */
 
 .container{
   padding:8px;
@@ -209,13 +209,13 @@ td{
   word-break:break-all;
 }
 
-/* ============ STATUS ============ */
+/* STATUS */
 
 .free{color:#00ff88}
 .using{color:#ffe600}
 .expired{color:#ff3333}
 
-/* ============ COPY BTN ============ */
+/* COPY */
 
 .copy-btn{
   cursor:pointer;
@@ -226,12 +226,12 @@ td{
   text-shadow:0 0 8px #00ffff;
 }
 
-/* ============ PAGES ============ */
+/* PAGES */
 
 .page{display:none}
 .page.active{display:block}
 
-/* ============ FOOTER ============ */
+/* FOOTER */
 
 footer{
   text-align:center;
@@ -369,22 +369,19 @@ footer{
 
 <script>
 
-/* ============ LOGIN ============ */
+/* LOGIN */
 
 const PASSWORD="ZM Swift HUB 0460";
 const KEY="swift_login";
 
 function login(){
 
-  const p=pass.value;
-  const r=remember.checked;
-
-  if(p!==PASSWORD){
+  if(pass.value!==PASSWORD){
     loginMsg.textContent="❌ Wrong Password";
     return;
   }
 
-  if(r){
+  if(remember.checked){
     localStorage.setItem(KEY,Date.now());
   }
 
@@ -394,7 +391,6 @@ function login(){
 function checkLogin(){
 
   const t=localStorage.getItem(KEY);
-
   if(!t) return;
 
   const day=30*24*60*60*1000;
@@ -408,12 +404,12 @@ function checkLogin(){
 
 checkLogin();
 
-/* ============ PANEL ============ */
+/* PANEL */
 
 function openPanel(){panel.style.display="flex"}
 function closePanel(){panel.style.display="none"}
 
-/* ============ PAGE ============ */
+/* PAGE */
 
 function hideAll(){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -445,7 +441,7 @@ function openStats(){
 
 function goBack(){openHome()}
 
-/* ============ TIME ============ */
+/* TIME */
 
 function format(ms){
 
@@ -459,14 +455,14 @@ function format(ms){
   return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${se.toString().padStart(2,"0")}`;
 }
 
-/* ============ COPY ============ */
+/* COPY */
 
 function copyKey(k){
   navigator.clipboard.writeText(k);
   alert("✅ Copied");
 }
 
-/* ============ LOAD ============ */
+/* LOAD */
 
 async function load(){
 
@@ -483,15 +479,22 @@ async function load(){
 
       let cls="",st="",time="";
 
-      if(!k.used){
-        cls="free";st="🟢";time="FREE";free++;
-      }else if(k.left>0){
-        cls="using";st="🟡";time=format(k.left);used++;
-      }else{
-        cls="expired";st="🔴";time="EXPIRED";used++;
+      if(k.type==="free" || k.type==="premium"){
+
+        total++;
+
+        if(!k.used){
+          cls="free";st="🟢";time="FREE";free++;
+        }
+        else if(k.left>0){
+          cls="using";st="🟡";time=format(k.left);used++;
+        }
+        else{
+          cls="expired";st="🔴";time="EXPIRED";used++;
+        }
       }
 
-      total++;
+      /* FREE */
 
       if(k.type==="free"){
         freeHTML+=`
@@ -504,7 +507,9 @@ async function load(){
         </tr>`;
       }
 
-      if(k.type==="test"){
+      /* PREMIUM */
+
+      if(k.type==="premium"){
         testHTML+=`
         <tr>
           <td>${t++}</td>
@@ -527,7 +532,9 @@ async function load(){
     statsText.textContent=
       `Total: ${total} | Free: ${free} | Used: ${used}`;
 
-  }catch(e){console.log(e)}
+  }catch(e){
+    console.log(e)
+  }
 
 }
 
